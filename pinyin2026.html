@@ -1,0 +1,2447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼音测试小助手</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', 'PingFang SC', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+            padding-bottom: 20px;
+            position: relative; /* 为强制退出按钮定位 */
+        }
+        
+        /* 强制退出按钮 - 始终可见 */
+        .emergency-exit-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 99999;
+            padding: 12px 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .emergency-exit-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+        
+        /* 添加半透明遮罩用于触屏 */
+        .emergency-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99998;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .emergency-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .emergency-panel h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        
+        .emergency-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .emergency-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        .emergency-exit {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .emergency-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        /* 其他原有样式保持不变 */
+        .header {
+            text-align: center;
+            margin: 10px 0 15px;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+        
+        /* 导航栏样式 - 增加错题练习模式的特殊样式 */
+        .navbar {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 18px 20px;
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover {
+            color: #3498db;
+            background-color: #f8f9fa;
+        }
+        
+        .nav-link.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            background-color: #f0f8ff;
+        }
+        
+        /* 错题练习模式下的导航栏样式 */
+        .practice-mode .nav-link {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .practice-mode .nav-link.practice-exit {
+            opacity: 1;
+            pointer-events: auto;
+            color: #e74c3c;
+            border-bottom-color: #e74c3c;
+            background-color: #fdeaea;
+        }
+        
+        .nav-link i {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        
+        /* 页面内容区域 */
+        .page-content {
+            width: 95%;
+            max-width: 900px;
+            display: none;
+        }
+        
+        .page-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e8ed;
+        }
+        
+        .section-title {
+            color: #3498db;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+        
+        .section-title i {
+            font-size: 1.2rem;
+        }
+        
+        .sub-section-title {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(to right, #f39c12, #e67e22);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn-info {
+            background: linear-gradient(to right, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(155, 89, 182, 0.3);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(to right, #8e44ad, #732d91);
+            color: white;
+        }
+        
+        .btn-purple:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(142, 68, 173, 0.3);
+        }
+        
+        .question-area {
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            margin: 15px 0;
+            border: 2px dashed #d1d8e0;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .question-title {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        
+        .hanzi {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .option-btn {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 180px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .option-btn:hover {
+            background: #ecf0f1;
+            transform: scale(1.05);
+        }
+        
+        .option-btn.selected {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .option-btn.correct {
+            background: #2ecc71;
+            color: white;
+            border-color: #27ae60;
+        }
+        
+        .option-btn.wrong {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            min-height: 30px;
+        }
+        
+        .correct-feedback {
+            color: #27ae60;
+        }
+        
+        .wrong-feedback {
+            color: #e74c3c;
+        }
+        
+        .like-animation {
+            font-size: 4rem;
+            color: #e74c3c;
+            animation: like 1s ease;
+            margin-top: 10px;
+        }
+        
+        @keyframes like {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .wrong-questions-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .wrong-question-item {
+            background: #f8f9fa;
+            border-left: 4px solid #e74c3c;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .wrong-question-text {
+            font-size: 1.1rem;
+        }
+        
+        .wrong-count {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .import-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .file-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            background: #f8f9fa;
+            flex-grow: 1;
+        }
+        
+        .template-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border-left: 4px solid #3498db;
+        }
+        
+        .template-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .template-table th, .template-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .template-table th {
+            background: #ecf0f1;
+            font-weight: 600;
+        }
+        
+        .status-message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .status-success {
+            background: #d5edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            padding: 20px;
+        }
+        
+        .exercise-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .exercise-type-btn {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 140px;
+            max-width: 200px;
+        }
+        
+        .exercise-type-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .exercise-type-btn.ln-exercise.active {
+            background: #8e44ad;
+            border-color: #732d91;
+        }
+        
+        .data-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .practice-info {
+            background: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .practice-info h4 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+        
+        .version-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .version-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .version-item:last-child {
+            border-bottom: none;
+        }
+        
+        .version-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .version-value {
+            color: #7f8c8d;
+        }
+        
+        .version-highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .practice-mode-banner {
+            background: linear-gradient(to right, #9b59b6, #8e44ad);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .practice-stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .practice-stat {
+            text-align: center;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        
+        .practice-stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #9b59b6;
+        }
+        
+        .practice-stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .hanzi {
+                font-size: 3rem;
+            }
+            
+            .options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .option-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                justify-content: center;
+            }
+            
+            .practice-stats {
+                flex-wrap: wrap;
+            }
+            
+            .exercise-type-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .exercise-type-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            /* iPad适配 */
+            .emergency-exit-btn {
+                top: 10px;
+                right: 10px;
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hanzi {
+                font-size: 2.5rem;
+            }
+            
+            .option-btn {
+                font-size: 1.3rem;
+                padding: 12px 20px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .nav-link {
+                padding: 15px 10px;
+                font-size: 1rem;
+            }
+            
+            .practice-mode-banner {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 紧急退出按钮 - 始终可见 -->
+    <button id="emergencyExitBtn" class="emergency-exit-btn" style="display: none;">
+        <i class="fas fa-sign-out-alt"></i> 强制退出
+    </button>
+    
+    <!-- 紧急退出面板 -->
+    <div id="emergencyOverlay" class="emergency-overlay">
+        <div class="emergency-panel">
+            <h3><i class="fas fa-exclamation-triangle"></i> 紧急退出确认</h3>
+            <p id="emergencyMessage">您正在错题练习模式中，确定要强制退出吗？</p>
+            <div class="emergency-buttons">
+                <button id="confirmEmergencyExit" class="emergency-btn emergency-exit">
+                    <i class="fas fa-sign-out-alt"></i> 确定退出
+                </button>
+                <button id="cancelEmergencyExit" class="emergency-btn emergency-cancel">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="header">
+        <h1>拼音测试小助手</h1>
+        <div class="subtitle">练习拼音发音，提高拼音能力</div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <ul class="nav-tabs">
+            <li class="nav-tab">
+                <a class="nav-link active" data-page="home">
+                    <i class="fas fa-home"></i> 主页
+                </a>
+            </li>
+            <li class="nav-tab">
+                <a class="nav-link" data-page="wrong-questions">
+                    <i class="fas fa-exclamation-triangle"></i> 错题记录
+                </a>
+            </li>
+            <li class="nav-tab">
+                <a class="nav-link" data-page="import">
+                    <i class="fas fa-file-import"></i> 题库导入
+                </a>
+            </li>
+            <li class="nav-tab">
+                <a class="nav-link" data-page="system">
+                    <i class="fas fa-cog"></i> 系统管理
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- 主页内容 -->
+    <div id="home-page" class="page-content active">
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-pencil-alt"></i>
+                <span>拼音测试</span>
+            </div>
+            
+            <div id="practiceModeBanner" class="practice-mode-banner" style="display: none;">
+                <div>
+                    <i class="fas fa-book"></i> 错题练习模式
+                </div>
+                <div>
+                    <span id="practiceProgress">0/0</span>
+                </div>
+                <button id="exitPracticeBtn" class="btn-danger" style="padding: 8px 15px;">
+                    <i class="fas fa-sign-out-alt"></i> 退出练习
+                </button>
+            </div>
+            
+            <div class="exercise-type-selector" id="exerciseTypeSelector">
+                <button class="exercise-type-btn active" data-type="all">全部练习</button>
+                <button class="exercise-type-btn" data-type="平翘舌练习">平舌音和翘舌音</button>
+                <button class="exercise-type-btn" data-type="前后鼻音练习">前鼻音和后鼻音</button>
+                <button class="exercise-type-btn ln-exercise" data-type="L和N练习">L和N发音练习</button>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn-primary">
+                    <i class="fas fa-play-circle"></i> 开始答题
+                </button>
+                <button id="nextBtn" class="btn-secondary" disabled>
+                    <i class="fas fa-forward"></i> 下一题
+                </button>
+                <button id="resetBtn" class="btn-warning">
+                    <i class="fas fa-redo"></i> 重置记录
+                </button>
+            </div>
+            
+            <div class="question-area" id="questionArea">
+                <div id="questionTitle" class="question-title"></div>
+                <div id="hanziDisplay" class="hanzi">?</div>
+                
+                <div class="options" id="optionsContainer">
+                    <!-- 选项将通过JavaScript动态生成 -->
+                </div>
+                
+                <div id="feedback" class="feedback"></div>
+                <div id="likeAnimation" class="like-animation" style="display:none;">❤️</div>
+            </div>
+            
+            <div id="practiceStats" class="practice-stats" style="display: none;">
+                <div class="practice-stat">
+                    <div id="practiceCorrect" class="practice-stat-value">0</div>
+                    <div class="practice-stat-label">答对</div>
+                </div>
+                <div class="practice-stat">
+                    <div id="practiceWrong" class="practice-stat-value">0</div>
+                    <div class="practice-stat-label">答错</div>
+                </div>
+                <div class="practice-stat">
+                    <div id="practiceAccuracy" class="practice-stat-value">0%</div>
+                    <div class="practice-stat-label">正确率</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div id="totalQuestions" class="stat-value">0</div>
+                    <div class="stat-label">总题数</div>
+                </div>
+                <div class="stat-item">
+                    <div id="correctAnswers" class="stat-value">0</div>
+                    <div class="stat-label">答对题数</div>
+                </div>
+                <div class="stat-item">
+                    <div id="wrongAnswers" class="stat-value">0</div>
+                    <div class="stat-label">答错题数</div>
+                </div>
+                <div class="stat-item">
+                    <div id="accuracy" class="stat-value">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+            </div>
+            
+            <div class="data-info">
+                <div>题库状态: <span id="questionBankStatus">加载中...</span></div>
+                <div>当前题目总数: <span id="currentQuestionCount">0</span></div>
+                <div>练习类型: <span id="currentExerciseTypeDisplay">全部练习</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 错题记录页 -->
+    <div id="wrong-questions-page" class="page-content">
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>错题记录</span>
+            </div>
+            
+            <div class="controls">
+                <button id="clearWrongBtn" class="btn-danger">
+                    <i class="fas fa-trash-alt"></i> 清空错题
+                </button>
+                <button id="practiceWrongBtn" class="btn-primary">
+                    <i class="fas fa-book"></i> 练习错题
+                </button>
+            </div>
+            
+            <div class="wrong-questions-container" id="wrongQuestionsContainer">
+                <!-- 错题将通过JavaScript动态生成 -->
+                <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                    暂无错题记录
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 题库导入页 -->
+    <div id="import-page" class="page-content">
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-file-import"></i>
+                <span>题库导入</span>
+            </div>
+            
+            <div class="import-area">
+                <div class="file-input-container">
+                    <input type="file" id="csvFileInput" accept=".csv">
+                    <button id="importBtn" class="btn-primary">
+                        <i class="fas fa-upload"></i> 导入题库
+                    </button>
+                </div>
+                
+                <div id="importStatus" class="status-message"></div>
+                
+                <div class="template-info">
+                    <h4>CSV表格模板说明</h4>
+                    <p>请下载模板文件，按照以下格式准备题库数据：</p>
+                    <table class="template-table">
+                        <thead>
+                            <tr>
+                                <th>题型</th>
+                                <th>汉字</th>
+                                <th>拼音选项1</th>
+                                <th>拼音选项2</th>
+                                <th>正确答案</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>平翘舌练习</td>
+                                <td>小草</td>
+                                <td>cǎo</td>
+                                <td>chǎo</td>
+                                <td>cǎo</td>
+                            </tr>
+                            <tr>
+                                <td>前后鼻音练习</td>
+                                <td>上</td>
+                                <td>shàn</td>
+                                <td>shàng</td>
+                                <td>shàng</td>
+                            </tr>
+                            <tr>
+                                <td>L和N练习</td>
+                                <td>小牛</td>
+                                <td>niú</td>
+                                <td>liú</td>
+                                <td>niú</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 10px;">
+                        <button id="downloadTemplateBtn" class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
+                            <i class="fas fa-download"></i> 下载模板文件
+                        </button>
+                    </p>
+                    <p style="margin-top: 8px; font-size: 0.8rem; color: #666;">
+                        <i class="fas fa-info-circle"></i> 注：CSV文件使用UTF-8编码，避免中文乱码
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 系统管理页 -->
+    <div id="system-page" class="page-content">
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-cog"></i>
+                <span>系统管理</span>
+            </div>
+            
+            <!-- 数据管理部分 -->
+            <div class="sub-section-title">
+                <i class="fas fa-database"></i> 数据管理
+            </div>
+            
+            <div class="import-area">
+                <div class="controls">
+                    <button id="exportBtn" class="btn-primary">
+                        <i class="fas fa-download"></i> 导出题库备份
+                    </button>
+                    <button id="importBackupBtn" class="btn-secondary">
+                        <i class="fas fa-upload"></i> 导入题库备份
+                    </button>
+                    <button id="clearAllDataBtn" class="btn-danger">
+                        <i class="fas fa-trash"></i> 清空所有数据
+                    </button>
+                </div>
+                
+                <div id="backupStatus" class="status-message"></div>
+                
+                <div class="template-info">
+                    <h4>数据管理说明</h4>
+                    <p><strong>导出功能</strong>: 将当前题库、错题记录和统计信息导出为一个JSON文件，方便备份和迁移。</p>
+                    <p><strong>导入功能</strong>: 从之前导出的JSON文件恢复数据，覆盖当前所有数据。</p>
+                    <p><strong>清空数据</strong>: 清空所有题库、错题记录和统计信息，恢复为初始状态。</p>
+                    <p><strong>注意事项</strong>:</p>
+                    <ul style="margin-left: 20px; margin-top: 8px; font-size: 0.9rem;">
+                        <li>数据保存在浏览器本地存储中，更换浏览器或清除数据会丢失</li>
+                        <li>建议定期导出备份以防数据丢失</li>
+                        <li>导入备份会覆盖当前所有数据，请谨慎操作</li>
+                        <li>清空所有数据操作不可恢复，请谨慎操作</li>
+                    </ul>
+                </div>
+                
+                <div class="data-info">
+                    <div>本地存储状态: <span id="storageStatus">检测中...</span></div>
+                    <div>题库大小: <span id="questionBankSize">0</span> 道题目</div>
+                    <div>错题数量: <span id="wrongQuestionsSize">0</span> 道</div>
+                    <div>存储空间使用情况: <span id="storageUsage">未知</span></div>
+                </div>
+            </div>
+            
+            <!-- 版本管理部分 -->
+            <div class="sub-section-title" style="margin-top: 30px;">
+                <i class="fas fa-code-branch"></i> 版本管理
+            </div>
+            
+            <div class="version-info">
+                <div class="version-item">
+                    <div class="version-label">当前版本</div>
+                    <div class="version-value version-highlight">26.1.9</div>
+                </div>
+                <div class="version-item">
+                    <div class="version-label">上次更新</div>
+                    <div id="lastUpdateDate" class="version-value">2026年1月9日</div>
+                </div>
+                <div class="version-item">
+                    <div class="version-label">数据版本</div>
+                    <div id="dataVersion" class="version-value">1.1</div>
+                </div>
+                <div class="version-item">
+                    <div class="version-label">浏览器兼容性</div>
+                    <div class="version-value">Chrome 80+ / Firefox 75+ / Edge 80+</div>
+                </div>
+            </div>
+            
+            <div class="template-info" style="margin-top: 15px;">
+                <h4>版本更新说明</h4>
+                <p><strong>26.1.9 版本更新内容：</strong></p>
+                <ul style="margin-left: 20px; margin-top: 8px; font-size: 0.9rem;">
+                    <li>新增L和N发音练习类型，区分L和N的发音</li>
+                    <li>更新CSV模板，支持L和N练习题型</li>
+                    <li>优化练习类型选择器布局，支持更多练习类型</li>
+                    <li>增加当前练习类型显示</li>
+                    <li>修复已知问题，提升用户体验</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        拼音测试小助手 v26.1.9  copyright：茜茜里橙  设计：茜茜里橙
+    </div>
+
+    <script>
+        // 本地存储键名
+        const STORAGE_KEYS = {
+            QUESTION_BANK: 'pinyin_question_bank',
+            WRONG_QUESTIONS: 'pinyin_wrong_questions',
+            TEST_STATS: 'pinyin_test_stats',
+            APP_VERSION: 'pinyin_app_version',
+            LAST_UPDATE: 'pinyin_last_update'
+        };
+        
+        // 应用版本
+        const APP_VERSION = '26.1.9';
+        
+        // 默认题库（如果用户没有导入题库，使用默认数据）
+        const DEFAULT_QUESTIONS = [
+            { type: "平翘舌练习", hanzi: "小草", option1: "cǎo", option2: "chǎo",  correctIndex: 0 },
+            { type: "平翘舌练习", hanzi: "书本", option1: "sū", option2: "shū",  correctIndex: 1 },
+            { type: "前后鼻音练习", hanzi: "上", option1: "shàn", option2: "shàng",  correctIndex: 1 },
+            { type: "前后鼻音练习", hanzi: "蓝", option1: "lán", option2: "láng",  correctIndex: 0 },
+            { type: "平翘舌练习", hanzi: "三", option1: "sān", option2: "shān",  correctIndex: 0 },
+            { type: "前后鼻音练习", hanzi: "山", option1: "shān", option2: "shāng",  correctIndex: 0 },
+            { type: "L和N练习", hanzi: "小牛", option1: "niú", option2: "liú",  correctIndex: 0 },
+            { type: "L和N练习", hanzi: "里面", option1: "lǐ", option2: "nǐ",  correctIndex: 0 },
+            { type: "L和N练习", hanzi: "你们", option1: "nǐ", option2: "lǐ",  correctIndex: 0 }
+        ];
+        
+        // 全局状态
+        let currentQuestion = null;
+        let questionBank = [];
+        let wrongQuestions = [];
+        let testStats = {
+            total: 0,
+            correct: 0,
+            wrong: 0,
+            accuracy: 0
+        };
+        let isAnswerSelected = false;
+        let currentExerciseType = "all"; // 当前练习类型：all, 平翘舌练习, 前后鼻音练习, L和N练习
+        
+        // 错题练习状态
+        let isPracticeMode = false;
+        let practiceWrongQuestions = []; // 当前练习的错题列表
+        let currentPracticeIndex = 0; // 当前练习的错题索引
+        let practiceStats = { // 错题练习统计
+            correct: 0,
+            wrong: 0,
+            accuracy: 0
+        };
+        
+        // DOM元素
+        const startBtn = document.getElementById('startBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const clearWrongBtn = document.getElementById('clearWrongBtn');
+        const practiceWrongBtn = document.getElementById('practiceWrongBtn');
+        const exitPracticeBtn = document.getElementById('exitPracticeBtn');
+        const importBtn = document.getElementById('importBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBackupBtn = document.getElementById('importBackupBtn');
+        const clearAllDataBtn = document.getElementById('clearAllDataBtn');
+        const csvFileInput = document.getElementById('csvFileInput');
+        const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+        const hanziDisplay = document.getElementById('hanziDisplay');
+        const questionTitle = document.getElementById('questionTitle');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedback = document.getElementById('feedback');
+        const likeAnimation = document.getElementById('likeAnimation');
+        const wrongQuestionsContainer = document.getElementById('wrongQuestionsContainer');
+        const totalQuestionsElement = document.getElementById('totalQuestions');
+        const correctAnswersElement = document.getElementById('correctAnswers');
+        const wrongAnswersElement = document.getElementById('wrongAnswers');
+        const accuracyElement = document.getElementById('accuracy');
+        const importStatus = document.getElementById('importStatus');
+        const backupStatus = document.getElementById('backupStatus');
+        const exerciseTypeBtns = document.querySelectorAll('.exercise-type-btn');
+        const exerciseTypeSelector = document.getElementById('exerciseTypeSelector');
+        const questionBankStatus = document.getElementById('questionBankStatus');
+        const currentQuestionCount = document.getElementById('currentQuestionCount');
+        const currentExerciseTypeDisplay = document.getElementById('currentExerciseTypeDisplay');
+        const storageStatus = document.getElementById('storageStatus');
+        const questionBankSize = document.getElementById('questionBankSize');
+        const wrongQuestionsSize = document.getElementById('wrongQuestionsSize');
+        const storageUsage = document.getElementById('storageUsage');
+        const practiceModeBanner = document.getElementById('practiceModeBanner');
+        const practiceStatsElement = document.getElementById('practiceStats');
+        const practiceCorrectElement = document.getElementById('practiceCorrect');
+        const practiceWrongElement = document.getElementById('practiceWrong');
+        const practiceAccuracyElement = document.getElementById('practiceAccuracy');
+        const practiceProgressElement = document.getElementById('practiceProgress');
+        const lastUpdateDateElement = document.getElementById('lastUpdateDate');
+        const dataVersionElement = document.getElementById('dataVersion');
+        const emergencyExitBtn = document.getElementById('emergencyExitBtn');
+        const emergencyOverlay = document.getElementById('emergencyOverlay');
+        const confirmEmergencyExit = document.getElementById('confirmEmergencyExit');
+        const cancelEmergencyExit = document.getElementById('cancelEmergencyExit');
+        const emergencyMessage = document.getElementById('emergencyMessage');
+        const navbar = document.getElementById('navbar');
+        
+        // 页面切换相关元素
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageContents = document.querySelectorAll('.page-content');
+        
+        // 初始化
+        function init() {
+            // 设置版本信息
+            document.querySelector('.footer').textContent = `拼音测试小助手 v${APP_VERSION} - copyright：茜茜里橙  设计：茜茜里橙`;
+            
+            // 检查 localStorage 是否可用
+            if (!isLocalStorageAvailable()) {
+                showStatusMessage('警告：浏览器本地存储不可用，题库无法保存！请检查浏览器设置或退出隐私模式。', 'error', 'home');
+                questionBankStatus.textContent = '本地存储不可用';
+                storageStatus.textContent = '不可用';
+                storageStatus.style.color = '#e74c3c';
+            } else {
+                questionBankStatus.textContent = '本地存储可用';
+                storageStatus.textContent = '可用';
+                storageStatus.style.color = '#27ae60';
+            }
+            
+            // 设置应用版本和更新日期
+            localStorage.setItem(STORAGE_KEYS.APP_VERSION, APP_VERSION);
+            const today = new Date();
+            const lastUpdate = localStorage.getItem(STORAGE_KEYS.LAST_UPDATE) || today.toISOString();
+            localStorage.setItem(STORAGE_KEYS.LAST_UPDATE, lastUpdate);
+            
+            // 显示版本信息
+            const lastUpdateDate = new Date(lastUpdate);
+            lastUpdateDateElement.textContent = `${lastUpdateDate.getFullYear()}年${lastUpdateDate.getMonth()+1}月${lastUpdateDate.getDate()}日`;
+            dataVersionElement.textContent = localStorage.getItem(STORAGE_KEYS.APP_VERSION) || '1.1';
+            
+            loadDataFromStorage();
+            updateStatsDisplay();
+            renderWrongQuestions();
+            updateDataInfo();
+            
+            // 如果题库为空，加载默认题库
+            if (questionBank.length === 0) {
+                console.log('题库为空，加载默认题库...');
+                questionBank = [...DEFAULT_QUESTIONS];
+                try {
+                    saveDataToStorage();
+                    console.log('默认题库已保存到本地存储');
+                    showStatusMessage('已加载默认题库！', 'success', 'home');
+                } catch (e) {
+                    console.error('无法保存默认题库到本地存储:', e);
+                    showStatusMessage('无法保存题库到本地存储，请检查浏览器设置。', 'error', 'home');
+                }
+            } else {
+                console.log('从本地存储加载题库成功，题目数量:', questionBank.length);
+                showStatusMessage(`从本地存储加载题库成功，共 ${questionBank.length} 道题目。`, 'success', 'home');
+            }
+            
+            // 显示当前题库信息
+            updateQuestionBankInfo();
+            
+            // 事件监听
+            startBtn.addEventListener('click', startTest);
+            nextBtn.addEventListener('click', nextQuestion);
+            resetBtn.addEventListener('click', resetTestStats);
+            clearWrongBtn.addEventListener('click', clearWrongQuestions);
+            practiceWrongBtn.addEventListener('click', startWrongPractice);
+            exitPracticeBtn.addEventListener('click', exitWrongPractice);
+            importBtn.addEventListener('click', importCSV);
+            exportBtn.addEventListener('click', exportBackup);
+            importBackupBtn.addEventListener('click', importBackup);
+            clearAllDataBtn.addEventListener('click', clearAllData);
+            downloadTemplateBtn.addEventListener('click', downloadTemplate);
+            
+            // 紧急退出按钮事件
+            emergencyExitBtn.addEventListener('click', showEmergencyExit);
+            confirmEmergencyExit.addEventListener('click', forceExitPractice);
+            cancelEmergencyExit.addEventListener('click', hideEmergencyExit);
+            
+            // 点击遮罩关闭紧急退出面板
+            emergencyOverlay.addEventListener('click', function(e) {
+                if (e.target === emergencyOverlay) {
+                    hideEmergencyExit();
+                }
+            });
+            
+            // 导航栏事件监听 - 改进版本
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    
+                    // 如果正在错题练习模式，显示紧急退出选项
+                    if (isPracticeMode) {
+                        emergencyMessage.textContent = '您正在错题练习模式中，切换到其他页面将退出练习模式。确定要继续吗？';
+                        showEmergencyExit();
+                        return;
+                    }
+                    
+                    switchPage(pageId);
+                    
+                    // 切换到系统管理页时更新信息
+                    if (pageId === 'system') {
+                        updateStorageInfo();
+                    }
+                });
+            });
+            
+            // 练习类型选择事件监听
+            exerciseTypeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 如果正在错题练习模式，显示紧急退出选项
+                    if (isPracticeMode) {
+                        emergencyMessage.textContent = '您正在错题练习模式中，切换练习类型将退出练习模式。确定要继续吗？';
+                        showEmergencyExit();
+                        return;
+                    }
+                    
+                    exerciseTypeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // 如果是L和N练习，添加特殊样式
+                    if (btn.getAttribute('data-type') === 'L和N练习') {
+                        btn.classList.add('ln-exercise');
+                    }
+                    
+                    currentExerciseType = btn.getAttribute('data-type');
+                    updateExerciseTypeDisplay();
+                    
+                    // 更新练习类型选择器的按钮状态
+                    updateExerciseTypeSelector();
+                });
+            });
+            
+            // 添加文件输入变化监听
+            csvFileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const fileName = this.files[0].name;
+                    showStatusMessage(`已选择文件: ${fileName}`, 'success', 'import');
+                }
+            });
+            
+            // 更新练习类型选择器
+            updateExerciseTypeSelector();
+            
+            // 更新练习类型显示
+            updateExerciseTypeDisplay();
+            
+            console.log('初始化完成，题库数量:', questionBank.length);
+        }
+        
+        // 显示紧急退出面板
+        function showEmergencyExit() {
+            emergencyOverlay.style.display = 'flex';
+        }
+        
+        // 隐藏紧急退出面板
+        function hideEmergencyExit() {
+            emergencyOverlay.style.display = 'none';
+        }
+        
+        // 强制退出练习模式
+        function forceExitPractice() {
+            hideEmergencyExit();
+            
+            // 退出错题练习模式
+            isPracticeMode = false;
+            
+            // 恢复UI显示
+            practiceModeBanner.style.display = 'none';
+            practiceStatsElement.style.display = 'none';
+            exerciseTypeSelector.style.display = 'flex';
+            startBtn.disabled = false;
+            nextBtn.disabled = true;
+            
+            // 更新导航栏状态
+            navbar.classList.remove('practice-mode');
+            
+            // 隐藏紧急退出按钮
+            emergencyExitBtn.style.display = 'none';
+            
+            // 清空题目显示
+            hanziDisplay.textContent = '?';
+            questionTitle.textContent = '';
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            likeAnimation.style.display = 'none';
+            optionsContainer.innerHTML = '';
+            
+            showStatusMessage('已强制退出错题练习模式。', 'success', 'home');
+        }
+        
+        // 更新练习类型显示
+        function updateExerciseTypeDisplay() {
+            currentExerciseTypeDisplay.textContent = getDisplayType(currentExerciseType);
+        }
+        
+        // 检测 localStorage 是否可用
+        function isLocalStorageAvailable() {
+            try {
+                const testKey = '__storage_test__';
+                localStorage.setItem(testKey, testKey);
+                localStorage.removeItem(testKey);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // 页面切换
+        function switchPage(pageId) {
+            // 更新导航栏激活状态
+            navLinks.forEach(link => {
+                if (link.getAttribute('data-page') === pageId) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            
+            // 显示对应的页面内容
+            pageContents.forEach(content => {
+                if (content.id === `${pageId}-page`) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+            
+            // 如果切换到错题页面，重新渲染错题
+            if (pageId === 'wrong-questions') {
+                renderWrongQuestions();
+            }
+            
+            // 如果切换到系统管理页，更新存储信息
+            if (pageId === 'system') {
+                updateStorageInfo();
+            }
+        }
+        
+        // 从本地存储加载数据
+        function loadDataFromStorage() {
+            // 加载题库
+            const savedQuestions = localStorage.getItem(STORAGE_KEYS.QUESTION_BANK);
+            if (savedQuestions) {
+                try {
+                    questionBank = JSON.parse(savedQuestions);
+                    console.log('从本地存储加载题库成功，题目数量:', questionBank.length);
+                } catch (e) {
+                    console.error('解析题库数据失败:', e);
+                    questionBank = [];
+                    showStatusMessage('解析题库数据失败，将使用默认题库。', 'error', 'home');
+                }
+            } else {
+                console.log('本地存储中没有题库数据');
+                questionBank = [];
+            }
+            
+            // 加载错题记录
+            const savedWrongQuestions = localStorage.getItem(STORAGE_KEYS.WRONG_QUESTIONS);
+            if (savedWrongQuestions) {
+                try {
+                    wrongQuestions = JSON.parse(savedWrongQuestions);
+                    console.log('从本地存储加载错题记录成功，错题数量:', wrongQuestions.length);
+                } catch (e) {
+                    console.error('解析错题记录失败:', e);
+                    wrongQuestions = [];
+                }
+            } else {
+                wrongQuestions = [];
+            }
+            
+            // 加载测试统计
+            const savedStats = localStorage.getItem(STORAGE_KEYS.TEST_STATS);
+            if (savedStats) {
+                try {
+                    testStats = JSON.parse(savedStats);
+                    console.log('从本地存储加载测试统计成功');
+                } catch (e) {
+                    console.error('解析测试统计失败:', e);
+                    testStats = { total: 0, correct: 0, wrong: 0, accuracy: 0 };
+                }
+            } else {
+                testStats = { total: 0, correct: 0, wrong: 0, accuracy: 0 };
+            }
+        }
+        
+        // 保存数据到本地存储
+        function saveDataToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.QUESTION_BANK, JSON.stringify(questionBank));
+                localStorage.setItem(STORAGE_KEYS.WRONG_QUESTIONS, JSON.stringify(wrongQuestions));
+                localStorage.setItem(STORAGE_KEYS.TEST_STATS, JSON.stringify(testStats));
+                console.log('数据已保存到本地存储');
+                return true;
+            } catch (e) {
+                console.error('保存数据到本地存储失败:', e);
+                if (e.name === 'QuotaExceededError') {
+                    showStatusMessage('本地存储空间不足，无法保存题库！请清除浏览器数据或减少题库大小。', 'error', 'home');
+                } else {
+                    showStatusMessage('保存到本地存储失败：' + e.message, 'error', 'home');
+                }
+                return false;
+            }
+        }
+        
+        // 更新题库信息显示
+        function updateQuestionBankInfo() {
+            currentQuestionCount.textContent = questionBank.length;
+            questionBankSize.textContent = questionBank.length;
+            wrongQuestionsSize.textContent = wrongQuestions.length;
+            
+            if (questionBank.length === 0) {
+                questionBankStatus.textContent = '题库为空';
+                questionBankStatus.style.color = '#e74c3c';
+            } else {
+                questionBankStatus.textContent = '题库已加载';
+                questionBankStatus.style.color = '#27ae60';
+            }
+        }
+        
+        // 更新存储信息
+        function updateStorageInfo() {
+            if (!isLocalStorageAvailable()) {
+                storageStatus.textContent = '不可用';
+                storageStatus.style.color = '#e74c3c';
+                storageUsage.textContent = '无法检测';
+                return;
+            }
+            
+            try {
+                // 计算存储使用量
+                let totalSize = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        totalSize += localStorage[key].length * 2; // 每个字符2字节
+                    }
+                }
+                
+                const sizeInKB = (totalSize / 1024).toFixed(2);
+                storageUsage.textContent = `${sizeInKB} KB`;
+                
+                // 检查存储限制（通常5MB）
+                if (totalSize > 4.5 * 1024 * 1024) { // 接近5MB时警告
+                    storageUsage.style.color = '#e74c3c';
+                    showStatusMessage('警告：本地存储空间即将用满，建议清理或备份数据！', 'warning', 'system');
+                } else if (totalSize > 3 * 1024 * 1024) { // 超过3MB时提示
+                    storageUsage.style.color = '#f39c12';
+                } else {
+                    storageUsage.style.color = '#27ae60';
+                }
+                
+            } catch (e) {
+                console.error('计算存储使用量失败:', e);
+                storageUsage.textContent = '计算失败';
+            }
+        }
+        
+        // 更新数据信息
+        function updateDataInfo() {
+            updateQuestionBankInfo();
+            updateStorageInfo();
+        }
+        
+        // 开始错题练习
+        function startWrongPractice() {
+            if (wrongQuestions.length === 0) {
+                showStatusMessage('暂无错题可练习！', 'error', 'wrong-questions');
+                return;
+            }
+            
+            // 切换到主页
+            switchPage('home');
+            
+            // 设置错题练习模式
+            isPracticeMode = true;
+            practiceWrongQuestions = [...wrongQuestions]; // 复制错题列表
+            currentPracticeIndex = 0;
+            practiceStats = { correct: 0, wrong: 0, accuracy: 0 };
+            
+            // 更新UI显示
+            practiceModeBanner.style.display = 'flex';
+            practiceStatsElement.style.display = 'flex';
+            exerciseTypeSelector.style.display = 'none'; // 隐藏练习类型选择器
+            startBtn.disabled = true;
+            nextBtn.disabled = false;
+            
+            // 更新导航栏状态
+            navbar.classList.add('practice-mode');
+            
+            // 显示强制退出按钮
+            emergencyExitBtn.style.display = 'flex';
+            
+            // 更新练习统计显示
+            updatePracticeStatsDisplay();
+            updatePracticeProgress();
+            
+            // 显示第一道错题
+            nextPracticeQuestion();
+            
+            showStatusMessage('已开始错题练习模式，练习结果不会影响主测试统计。', 'success', 'home');
+        }
+        
+        // 退出错题练习（原退出按钮）
+        function exitWrongPractice() {
+            if (confirm('确定要退出错题练习吗？')) {
+                isPracticeMode = false;
+                
+                // 恢复UI显示
+                practiceModeBanner.style.display = 'none';
+                practiceStatsElement.style.display = 'none';
+                exerciseTypeSelector.style.display = 'flex';
+                startBtn.disabled = false;
+                nextBtn.disabled = true;
+                
+                // 更新导航栏状态
+                navbar.classList.remove('practice-mode');
+                
+                // 隐藏紧急退出按钮
+                emergencyExitBtn.style.display = 'none';
+                
+                // 清空题目显示
+                hanziDisplay.textContent = '?';
+                questionTitle.textContent = '';
+                feedback.textContent = '';
+                feedback.className = 'feedback';
+                likeAnimation.style.display = 'none';
+                optionsContainer.innerHTML = '';
+                
+                showStatusMessage('已退出错题练习模式。', 'success', 'home');
+            }
+        }
+        
+        // 下一道错题
+        function nextPracticeQuestion() {
+            if (!isPracticeMode || currentPracticeIndex >= practiceWrongQuestions.length) {
+                // 所有错题练习完成
+                if (isPracticeMode && practiceWrongQuestions.length > 0) {
+                    const finalAccuracy = Math.round((practiceStats.correct / practiceWrongQuestions.length) * 100);
+                    showStatusMessage(`错题练习完成！正确率: ${finalAccuracy}%`, 'success', 'home');
+                }
+                exitWrongPractice();
+                return;
+            }
+            
+            const wrongItem = practiceWrongQuestions[currentPracticeIndex];
+            currentQuestion = {
+                type: wrongItem.type,
+                hanzi: wrongItem.hanzi,
+                option1: wrongItem.option1,
+                option2: wrongItem.option2,
+                correctIndex: wrongItem.correctIndex
+            };
+            
+            // 显示汉字
+            hanziDisplay.textContent = currentQuestion.hanzi;
+            
+            // 显示题目类型和说明
+            questionTitle.textContent = `错题练习 - ${getDisplayType(currentQuestion.type)} - 请选择正确的读音`;
+            
+            // 清空反馈
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            likeAnimation.style.display = 'none';
+            
+            // 渲染选项
+            renderOptions();
+            
+            isAnswerSelected = false;
+            
+            // 更新进度
+            updatePracticeProgress();
+        }
+        
+        // 更新练习进度显示
+        function updatePracticeProgress() {
+            if (isPracticeMode) {
+                practiceProgressElement.textContent = `${currentPracticeIndex + 1}/${practiceWrongQuestions.length}`;
+            }
+        }
+        
+        // 更新练习统计显示
+        function updatePracticeStatsDisplay() {
+            practiceCorrectElement.textContent = practiceStats.correct;
+            practiceWrongElement.textContent = practiceStats.wrong;
+            
+            const total = practiceStats.correct + practiceStats.wrong;
+            if (total > 0) {
+                practiceStats.accuracy = Math.round((practiceStats.correct / total) * 100);
+                practiceAccuracyElement.textContent = `${practiceStats.accuracy}%`;
+            } else {
+                practiceAccuracyElement.textContent = '0%';
+            }
+        }
+        
+        // 根据练习类型筛选题目
+        function filterQuestionsByType() {
+            if (currentExerciseType === "all") {
+                return questionBank;
+            } else {
+                return questionBank.filter(q => q.type === currentExerciseType);
+            }
+        }
+        
+        // 开始测试（普通模式）
+        function startTest() {
+            // 如果正在错题练习模式，不允许开始普通测试
+            if (isPracticeMode) {
+                showStatusMessage('错题练习模式下不能开始普通测试，请先退出练习。', 'warning', 'home');
+                return;
+            }
+            
+            const filteredQuestions = filterQuestionsByType();
+            
+            if (filteredQuestions.length === 0) {
+                showStatusMessage(`当前练习类型"${getDisplayType(currentExerciseType)}"没有题目，请先导入题库！`, 'error', 'home');
+                return;
+            }
+            
+            // 重置当前状态
+            currentQuestion = null;
+            isAnswerSelected = false;
+            
+            // 生成题目
+            nextQuestion();
+            
+            // 更新按钮状态
+            startBtn.disabled = true;
+            nextBtn.disabled = false;
+            
+            showStatusMessage('测试已开始，请选择正确答案！', 'success', 'home');
+        }
+        
+        // 下一题（普通模式）
+        function nextQuestion() {
+            // 如果正在错题练习模式，调用错题练习的下一题
+            if (isPracticeMode) {
+                currentPracticeIndex++;
+                nextPracticeQuestion();
+                return;
+            }
+            
+            const filteredQuestions = filterQuestionsByType();
+            
+            if (filteredQuestions.length === 0) return;
+            
+            // 随机选择一道题目
+            const randomIndex = Math.floor(Math.random() * filteredQuestions.length);
+            currentQuestion = { ...filteredQuestions[randomIndex] };
+            
+            // 显示汉字
+            hanziDisplay.textContent = currentQuestion.hanzi;
+            
+            // 显示题目类型和说明
+            questionTitle.textContent = `${getDisplayType(currentQuestion.type)} - ${getRequirementByType(currentQuestion.type)}`;
+            
+            // 清空反馈
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            likeAnimation.style.display = 'none';
+            
+            // 渲染选项
+            renderOptions();
+            
+            isAnswerSelected = false;
+        }
+        
+        // 获取显示类型名称
+        function getDisplayType(type) {
+            switch(type) {
+                case '平翘舌练习':
+                    return '平舌音和翘舌音';
+                case '前后鼻音练习':
+                    return '前鼻音和后鼻音';
+                case 'L和N练习':
+                    return 'L和N发音练习';
+                default:
+                    return type;
+            }
+        }
+        
+        // 根据题型获取练习要求
+        function getRequirementByType(type) {
+            switch(type) {
+                case '平翘舌练习':
+                    return '请选择正确的读音（注意平舌音和翘舌音的区别）';
+                case '前后鼻音练习':
+                    return '请选择正确的读音（注意前鼻音和后鼻音的区别）';
+                case 'L和N练习':
+                    return '请选择正确的读音（注意L和N发音的区别）';
+                default:
+                    return '请选择正确的读音';
+            }
+        }
+        
+        // 渲染选项
+        function renderOptions() {
+            optionsContainer.innerHTML = '';
+            
+            // 创建两个选项按钮
+            const option1Btn = document.createElement('button');
+            option1Btn.className = 'option-btn';
+            option1Btn.textContent = currentQuestion.option1;
+            option1Btn.dataset.index = 0;
+            
+            const option2Btn = document.createElement('button');
+            option2Btn.className = 'option-btn';
+            option2Btn.textContent = currentQuestion.option2;
+            option2Btn.dataset.index = 1;
+            
+            // 添加点击事件
+            option1Btn.addEventListener('click', () => {
+                if (isAnswerSelected) return; // 防止重复选择
+                selectOption(option1Btn, 0);
+            });
+            
+            option2Btn.addEventListener('click', () => {
+                if (isAnswerSelected) return; // 防止重复选择
+                selectOption(option2Btn, 1);
+            });
+            
+            optionsContainer.appendChild(option1Btn);
+            optionsContainer.appendChild(option2Btn);
+        }
+        
+        // 选择选项
+        function selectOption(optionBtn, selectedIndex) {
+            isAnswerSelected = true;
+            
+            // 更新所有选项按钮状态
+            const allOptions = document.querySelectorAll('.option-btn');
+            allOptions.forEach(btn => {
+                btn.disabled = true;
+                if (parseInt(btn.dataset.index) === currentQuestion.correctIndex) {
+                    btn.classList.add('correct');
+                }
+            });
+            
+            // 更新选中的按钮
+            optionBtn.classList.add('selected');
+            
+            if (isPracticeMode) {
+                // 错题练习模式
+                if (selectedIndex === currentQuestion.correctIndex) {
+                    // 回答正确
+                    optionBtn.classList.add('correct');
+                    feedback.textContent = '回答正确！';
+                    feedback.className = 'feedback correct-feedback';
+                    practiceStats.correct++;
+                    
+                    // 显示点赞动画
+                    likeAnimation.style.display = 'block';
+                } else {
+                    // 回答错误
+                    optionBtn.classList.add('wrong');
+                    const correctOption = currentQuestion.correctIndex === 0 ? currentQuestion.option1 : currentQuestion.option2;
+                    feedback.innerHTML = `回答错误！正确答案是：<span style="color: #27ae60; font-weight: bold;">${correctOption}</span>`;
+                    feedback.className = 'feedback wrong-feedback';
+                    practiceStats.wrong++;
+                    
+                    // 在错题记录中增加错误次数
+                    updateWrongQuestionCount();
+                }
+                
+                // 更新练习统计显示
+                updatePracticeStatsDisplay();
+                
+                // 自动进入下一题（2秒后）
+                setTimeout(() => {
+                    currentPracticeIndex++;
+                    nextPracticeQuestion();
+                }, 2000);
+                
+            } else {
+                // 普通测试模式
+                // 更新测试统计
+                testStats.total++;
+                
+                if (selectedIndex === currentQuestion.correctIndex) {
+                    // 回答正确
+                    optionBtn.classList.add('correct');
+                    feedback.textContent = '回答正确！';
+                    feedback.className = 'feedback correct-feedback';
+                    testStats.correct++;
+                    
+                    // 显示点赞动画
+                    likeAnimation.style.display = 'block';
+                } else {
+                    // 回答错误
+                    optionBtn.classList.add('wrong');
+                    const correctOption = currentQuestion.correctIndex === 0 ? currentQuestion.option1 : currentQuestion.option2;
+                    feedback.innerHTML = `回答错误！正确答案是：<span style="color: #27ae60; font-weight: bold;">${correctOption}</span>`;
+                    feedback.className = 'feedback wrong-feedback';
+                    testStats.wrong++;
+                    
+                    // 更新错题记录
+                    updateWrongQuestions();
+                }
+                
+                // 更新准确率
+                testStats.accuracy = testStats.total > 0 ? Math.round((testStats.correct / testStats.total) * 100) : 0;
+                
+                // 更新显示和存储
+                updateStatsDisplay();
+                saveDataToStorage();
+                renderWrongQuestions();
+                updateDataInfo();
+            }
+        }
+        
+        // 更新错题记录（普通模式）
+        function updateWrongQuestions() {
+            if (!currentQuestion) return;
+            
+            // 查找是否已有该错题记录
+            const existingIndex = wrongQuestions.findIndex(item => 
+                item.hanzi === currentQuestion.hanzi && item.type === currentQuestion.type
+            );
+            
+            if (existingIndex >= 0) {
+                // 已存在，增加错误次数
+                wrongQuestions[existingIndex].wrongCount++;
+            } else {
+                // 新错题，添加到记录中
+                wrongQuestions.push({
+                    type: currentQuestion.type,
+                    hanzi: currentQuestion.hanzi,
+                    option1: currentQuestion.option1,
+                    option2: currentQuestion.option2,
+                    correctIndex: currentQuestion.correctIndex,
+                    wrongCount: 1
+                });
+            }
+        }
+        
+        // 更新错题错误次数（练习模式）
+        function updateWrongQuestionCount() {
+            if (!currentQuestion) return;
+            
+            // 在原始错题记录中查找对应的错题
+            const existingIndex = wrongQuestions.findIndex(item => 
+                item.hanzi === currentQuestion.hanzi && item.type === currentQuestion.type
+            );
+            
+            if (existingIndex >= 0) {
+                // 增加错误次数
+                wrongQuestions[existingIndex].wrongCount++;
+                saveDataToStorage();
+                renderWrongQuestions();
+                updateDataInfo();
+            }
+        }
+        
+        // 渲染错题记录
+        function renderWrongQuestions() {
+            wrongQuestionsContainer.innerHTML = '';
+            
+            if (wrongQuestions.length === 0) {
+                wrongQuestionsContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">暂无错题记录</div>';
+                return;
+            }
+            
+            // 按错误次数排序（错误次数多的排前面）
+            const sortedWrongQuestions = [...wrongQuestions].sort((a, b) => b.wrongCount - a.wrongCount);
+            
+            sortedWrongQuestions.forEach(item => {
+                const wrongItem = document.createElement('div');
+                wrongItem.className = 'wrong-question-item';
+                
+                const correctOption = item.correctIndex === 0 ? item.option1 : item.option2;
+                const wrongOption = item.correctIndex === 0 ? item.option2 : item.option1;
+                
+                wrongItem.innerHTML = `
+                    <div class="wrong-question-text">
+                        <strong>${getDisplayType(item.type)}</strong> - <strong>${item.hanzi}</strong><br>
+                        错误选择: ${wrongOption} (正确: ${correctOption})
+                    </div>
+                    <div class="wrong-count">错${item.wrongCount}次</div>
+                `;
+                
+                wrongQuestionsContainer.appendChild(wrongItem);
+            });
+        }
+        
+        // 清空错题记录
+        function clearWrongQuestions() {
+            if (confirm('确定要清空所有错题记录吗？此操作不可撤销！')) {
+                wrongQuestions = [];
+                if (saveDataToStorage()) {
+                    renderWrongQuestions();
+                    updateDataInfo();
+                    showStatusMessage('错题记录已清空！', 'success', 'wrong-questions');
+                }
+            }
+        }
+        
+        // 重置测试统计
+        function resetTestStats() {
+            if (confirm('确定要重置所有测试统计吗？此操作不可撤销！')) {
+                testStats = { total: 0, correct: 0, wrong: 0, accuracy: 0 };
+                updateStatsDisplay();
+                if (saveDataToStorage()) {
+                    showStatusMessage('测试统计已重置！', 'success', 'home');
+                }
+            }
+        }
+        
+        // 清空所有数据
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？这将删除题库、错题记录和所有统计信息，恢复为初始状态。此操作不可撤销！')) {
+                questionBank = [...DEFAULT_QUESTIONS];
+                wrongQuestions = [];
+                testStats = { total: 0, correct: 0, wrong: 0, accuracy: 0 };
+                
+                if (saveDataToStorage()) {
+                    updateStatsDisplay();
+                    renderWrongQuestions();
+                    updateDataInfo();
+                    updateExerciseTypeSelector();
+                    
+                    // 如果正在练习模式，退出练习
+                    if (isPracticeMode) {
+                        exitWrongPractice();
+                    }
+                    
+                    showStatusMessage('所有数据已清空，恢复为初始状态！', 'success', 'system');
+                }
+            }
+        }
+        
+        // 更新统计显示
+        function updateStatsDisplay() {
+            totalQuestionsElement.textContent = testStats.total;
+            correctAnswersElement.textContent = testStats.correct;
+            wrongAnswersElement.textContent = testStats.wrong;
+            accuracyElement.textContent = `${testStats.accuracy}%`;
+        }
+        
+        // 导入CSV题库
+        function importCSV() {
+            const file = csvFileInput.files[0];
+            
+            if (!file) {
+                showStatusMessage('请选择要导入的CSV文件！', 'error', 'import');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const csvContent = e.target.result;
+                    
+                    // 检查文件内容是否为空
+                    if (!csvContent || csvContent.trim().length === 0) {
+                        showStatusMessage('CSV文件内容为空！', 'error', 'import');
+                        return;
+                    }
+                    
+                    // 尝试不同编码解析
+                    let decodedContent;
+                    try {
+                        // 尝试UTF-8解码
+                        decodedContent = csvContent;
+                        // 如果文件有BOM头，去除它
+                        if (decodedContent.charCodeAt(0) === 0xFEFF) {
+                            decodedContent = decodedContent.slice(1);
+                        }
+                    } catch (encodingError) {
+                        showStatusMessage('文件编码不支持，请使用UTF-8编码的CSV文件', 'error', 'import');
+                        return;
+                    }
+                    
+                    const newQuestions = parseCSV(decodedContent);
+                    
+                    if (newQuestions.length > 0) {
+                        // 替换现有题库
+                        questionBank = newQuestions;
+                        
+                        // 尝试保存到本地存储
+                        if (saveDataToStorage()) {
+                            console.log(`成功导入 ${newQuestions.length} 道题目到本地存储`);
+                            
+                            // 验证是否保存成功
+                            const savedQuestions = localStorage.getItem(STORAGE_KEYS.QUESTION_BANK);
+                            if (savedQuestions) {
+                                const parsedQuestions = JSON.parse(savedQuestions);
+                                console.log(`本地存储中现有 ${parsedQuestions.length} 道题目`);
+                            }
+                            
+                            // 清空文件输入
+                            csvFileInput.value = '';
+                            
+                            // 更新UI
+                            updateExerciseTypeSelector();
+                            updateDataInfo();
+                            updateExerciseTypeDisplay();
+                            
+                            showStatusMessage(`成功导入 ${newQuestions.length} 道题目！`, 'success', 'import');
+                            
+                            // 更新统计显示
+                            setTimeout(() => {
+                                showStatusMessage(`题库已保存到本地存储，当前题库有 ${questionBank.length} 道题目。`, 'success', 'import');
+                            }, 2000);
+                            
+                        } else {
+                            showStatusMessage('保存到本地存储失败！', 'error', 'import');
+                        }
+                    } else {
+                        showStatusMessage('CSV文件中没有有效的题目数据！请检查文件格式。', 'error', 'import');
+                    }
+                } catch (error) {
+                    console.error('CSV导入错误详情:', error);
+                    showStatusMessage('导入失败：' + error.message + '。请检查CSV文件格式是否正确。', 'error', 'import');
+                }
+            };
+            
+            reader.onerror = function() {
+                showStatusMessage('读取文件失败！请确保文件没有损坏。', 'error', 'import');
+            };
+            
+            // 使用正确的编码读取
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        // 更新练习类型选择器
+        function updateExerciseTypeSelector() {
+            const types = new Set(questionBank.map(q => q.type));
+            
+            // 更新按钮显示
+            exerciseTypeBtns.forEach(btn => {
+                const type = btn.getAttribute('data-type');
+                if (type !== 'all') {
+                    const displayName = getDisplayType(type);
+                    btn.textContent = displayName;
+                    
+                    // 如果该类型没有题目，禁用按钮
+                    const hasQuestions = questionBank.some(q => q.type === type);
+                    btn.disabled = !hasQuestions;
+                    if (!hasQuestions) {
+                        btn.title = '该类型暂无题目，请先导入题库';
+                    }
+                    
+                    // 如果是L和N练习，添加特殊样式
+                    if (type === 'L和N练习') {
+                        btn.classList.add('ln-exercise');
+                    } else {
+                        btn.classList.remove('ln-exercise');
+                    }
+                }
+            });
+        }
+        
+        // 解析CSV内容 - 适配新的CSV格式
+        function parseCSV(csvText) {
+            const questions = [];
+            const lines = csvText.trim().split(/\r?\n/);
+            
+            // 跳过标题行
+            let startIndex = 0;
+            if (lines.length > 0 && (lines[0].includes('题型') || lines[0].includes('﻿题型'))) {
+                startIndex = 1;
+            }
+            
+            for (let i = startIndex; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // 解析CSV行，处理可能包含逗号的字段
+                const fields = parseCSVLine(line);
+                
+                if (fields.length >= 5) {
+                    let type, hanzi, option1, option2, correctAnswer;
+                    
+                    // 适配不同的字段顺序
+                    if (fields[0].includes('平翘舌') || fields[0].includes('前后鼻音') || fields[0].includes('L和N')) {
+                        // 新格式：题型,汉字,拼音选项1,拼音选项2,正确答案
+                        if (fields[0].includes('平翘舌')) {
+                            type = '平翘舌练习';
+                        } else if (fields[0].includes('前后鼻音')) {
+                            type = '前后鼻音练习';
+                        } else if (fields[0].includes('L和N')) {
+                            type = 'L和N练习';
+                        }
+                        hanzi = fields[1];
+                        option1 = fields[2];
+                        option2 = fields[3];
+                        correctAnswer = fields[4];
+                    } else if (fields[0].includes('平舌音') || fields[0].includes('前鼻音') || fields[0].includes('L') || fields[0].includes('N')) {
+                        // 备用格式：直接判断类型
+                        if (fields[0].includes('平舌音')) {
+                            type = '平翘舌练习';
+                        } else if (fields[0].includes('前鼻音')) {
+                            type = '前后鼻音练习';
+                        } else if (fields[0].includes('L') || fields[0].includes('N')) {
+                            type = 'L和N练习';
+                        }
+                        hanzi = fields[1];
+                        option1 = fields[2];
+                        option2 = fields[3];
+                        correctAnswer = fields[4];
+                    } else {
+                        // 默认处理：假设第一列是类型
+                        type = fields[0];
+                        hanzi = fields[1];
+                        option1 = fields[2];
+                        option2 = fields[3];
+                        correctAnswer = fields[4];
+                    }
+                    
+                    // 确定正确答案索引
+                    let correctIndex = 0;
+                    if (correctAnswer === option1) {
+                        correctIndex = 0;
+                    } else if (correctAnswer === option2) {
+                        correctIndex = 1;
+                    } else if (correctAnswer === '0' || correctAnswer === '1') {
+                        correctIndex = parseInt(correctAnswer);
+                    } else {
+                        // 如果无法确定，根据类型猜测
+                        if (type === 'L和N练习') {
+                            // 对于L和N练习，如果正确答案包含"n"或"l"，尝试匹配
+                            if (correctAnswer.includes('n') || correctAnswer.includes('N')) {
+                                correctIndex = correctAnswer === option1 ? 0 : 1;
+                            } else {
+                                correctIndex = 0; // 默认第一个选项
+                            }
+                        } else {
+                            correctIndex = type === '前后鼻音练习' ? 1 : 0;
+                        }
+                    }
+                    
+                    questions.push({
+                        type: type,
+                        hanzi: hanzi,
+                        option1: option1,
+                        option2: option2,
+                        correctIndex: correctIndex
+                    });
+                }
+            }
+            
+            return questions;
+        }
+        
+        // 解析CSV行，处理可能包含逗号的字段
+        function parseCSVLine(line) {
+            const fields = [];
+            let currentField = '';
+            let insideQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    insideQuotes = !insideQuotes;
+                } else if (char === ',' && !insideQuotes) {
+                    fields.push(currentField.trim());
+                    currentField = '';
+                } else {
+                    currentField += char;
+                }
+            }
+            
+            fields.push(currentField.trim());
+            
+            // 移除字段中的引号
+            for (let i = 0; i < fields.length; i++) {
+                fields[i] = fields[i].replace(/^"(.*)"$/, '$1');
+            }
+            
+            return fields;
+        }
+        
+        // 下载CSV模板（修复乱码问题）
+        function downloadTemplate() {
+            // CSV文件内容，添加BOM头确保中文不乱码
+            const csvContent = "\ufeff题型,汉字,拼音选项1,拼音选项2,正确答案\n" +
+                "平翘舌练习,小草,cǎo,chǎo,cǎo\n" +
+                "平翘舌练习,书本,sū,shū,shū\n" +
+                "前后鼻音练习,上山,shàn,shàng,shàng\n" +
+                "前后鼻音练习,山水,shān,shāng,shān\n" +
+                "前后鼻音练习,蓝天,lán,láng,lán\n" +
+                "平翘舌练习,成功,céng,chéng,chéng\n" +
+                "平翘舌练习,时间,sí,shí,shí\n" +
+                "平翘舌练习,老师,sī,shī,shī\n" +
+                "L和N练习,小牛,niú,liú,niú\n" +
+                "L和N练习,里面,lǐ,nǐ,lǐ\n" +
+                "L和N练习,你们,nǐ,lǐ,nǐ";
+            
+            // 使用UTF-8 BOM编码创建Blob
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '拼音题库模板.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // 释放URL对象
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showStatusMessage('模板文件已开始下载！', 'success', 'import');
+        }
+        
+        // 导出备份数据
+        function exportBackup() {
+            if (questionBank.length === 0 && wrongQuestions.length === 0) {
+                showStatusMessage('没有数据可以导出！', 'error', 'system');
+                return;
+            }
+            
+            try {
+                const backupData = {
+                    appVersion: APP_VERSION,
+                    exportDate: new Date().toISOString(),
+                    questionBank: questionBank,
+                    wrongQuestions: wrongQuestions,
+                    testStats: testStats
+                };
+                
+                const jsonContent = JSON.stringify(backupData, null, 2);
+                const blob = new Blob([jsonContent], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `拼音测试备份_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // 释放URL对象
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                showStatusMessage(`成功导出备份文件！包含${questionBank.length}道题目和${wrongQuestions.length}道错题。`, 'success', 'system');
+                
+            } catch (error) {
+                console.error('导出备份失败:', error);
+                showStatusMessage('导出备份失败：' + error.message, 'error', 'system');
+            }
+        }
+        
+        // 导入备份数据
+        function importBackup() {
+            // 创建文件输入元素
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const backupData = JSON.parse(e.target.result);
+                        
+                        // 验证备份数据格式
+                        if (!backupData.questionBank || !Array.isArray(backupData.questionBank)) {
+                            throw new Error('备份文件格式不正确，缺少题库数据');
+                        }
+                        
+                        // 确认是否覆盖
+                        if (!confirm(`即将导入${backupData.questionBank.length}道题目，这会覆盖当前所有数据。确定要继续吗？`)) {
+                            return;
+                        }
+                        
+                        // 恢复数据
+                        questionBank = backupData.questionBank;
+                        wrongQuestions = backupData.wrongQuestions || [];
+                        testStats = backupData.testStats || { total: 0, correct: 0, wrong: 0, accuracy: 0 };
+                        
+                        // 保存到本地存储
+                        if (saveDataToStorage()) {
+                            // 更新UI
+                            updateStatsDisplay();
+                            renderWrongQuestions();
+                            updateExerciseTypeSelector();
+                            updateDataInfo();
+                            updateExerciseTypeDisplay();
+                            
+                            // 如果正在练习模式，退出练习
+                            if (isPracticeMode) {
+                                exitWrongPractice();
+                            }
+                            
+                            showStatusMessage(`成功导入备份！恢复${questionBank.length}道题目和${wrongQuestions.length}道错题。`, 'success', 'system');
+                            
+                        } else {
+                            showStatusMessage('保存数据失败！', 'error', 'system');
+                        }
+                        
+                    } catch (error) {
+                        console.error('导入备份失败:', error);
+                        showStatusMessage('导入备份失败：' + error.message, 'error', 'system');
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showStatusMessage('读取备份文件失败！', 'error', 'system');
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            fileInput.click();
+        }
+        
+        // 显示状态消息
+        function showStatusMessage(message, type, page = 'home') {
+            let statusElement;
+            
+            if (page === 'import') {
+                statusElement = importStatus;
+            } else if (page === 'system') {
+                statusElement = backupStatus;
+            } else {
+                // 默认在主页面显示
+                statusElement = document.createElement('div');
+                statusElement.className = `status-message status-${type}`;
+                statusElement.style.position = 'fixed';
+                statusElement.style.top = '80px';
+                statusElement.style.left = '50%';
+                statusElement.style.transform = 'translateX(-50%)';
+                statusElement.style.zIndex = '1000';
+                statusElement.style.maxWidth = '80%';
+                statusElement.textContent = message;
+                document.body.appendChild(statusElement);
+                
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    if (statusElement.parentNode) {
+                        statusElement.parentNode.removeChild(statusElement);
+                    }
+                }, 3000);
+                return;
+            }
+            
+            statusElement.textContent = message;
+            statusElement.className = `status-message status-${type}`;
+            statusElement.style.display = 'block';
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
