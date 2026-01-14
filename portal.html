@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>笼包阁学习系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        .app-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .app-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .app-card:hover, .app-card:active {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .app-card h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+        }
+        
+        .app-card p {
+            color: #666;
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .instructions {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .instructions h4 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .app-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 笼包阁学习系统</h1>
+            <p class="description">轻松学习，快乐成长</p>
+        </div>
+        
+        <div class="app-list">
+            <!-- 直接使用相对路径链接 -->
+            <a href="积分打卡系统v26.1.9.html" class="app-card">
+                <h3>💰 藏宝阁</h3>
+                <p>积分奖励及兑换系统</p>
+            </a>
+            
+            <a href="拼音练习v26.1.9.html" class="app-card">
+                <h3>🔤 学拼音</h3>
+                <p>拼音发音和拼写练习</p>
+            </a>
+            
+            <a href="数学练习.html" class="app-card">
+                <h3>🔢 学数学</h3>
+                <p>启蒙小组数学复习</p>
+            </a>
+            
+            <a href="英语练习.html" class="app-card">
+                <h3>🔠 学英语</h3>
+                <p>英语单词记忆和练习</p>
+            </a>
+            
+            <a href="游戏.html" class="app-card">
+                <h3>🎮 玩游戏</h3>
+                <p>有趣的益智小游戏</p>
+            </a>
+            
+            <a href="寒假打卡.html" class="app-card">
+                <h3>📅 寒假打卡</h3>
+                <p>每日学习打卡记录</p>
+            </a>
+        </div>
+        
+        <div class="instructions">
+            <h4>📱 使用说明</h4>
+            <ol>
+                <li>所有文件已保存在iPad本地</li>
+                <li>点击上方卡片直接打开学习页面</li>
+                <li>每个页面都有"返回"按钮回到此门户</li>
+                <li>无需网络，随时随地学习</li>
+            </ol>
+            <p style="color: #666; font-size: 14px; margin-top: 15px;">
+                💡 提示：可以将此页面添加到主屏幕，像App一样使用
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // 简单的页面加载检测
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('笼包阁学习系统已加载');
+            
+            // 显示当前路径信息（仅用于调试）
+            const pathInfo = `
+                当前页面: ${window.location.href}
+                协议: ${window.location.protocol}
+                路径: ${window.location.pathname}
+            `;
+            
+            // 可以显示在控制台或页面上
+            if (window.location.protocol === 'file:') {
+                console.log('✅ 正在使用本地文件模式，页面跳转将正常工作');
+                console.log(pathInfo);
+            }
+        });
+        
+        // 检测链接是否有效
+        document.querySelectorAll('.app-card').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                console.log(`尝试打开: ${href}`);
+                
+                // 如果文件不存在，会显示浏览器默认错误页面
+                // 这里我们不做额外处理，让浏览器处理
+            });
+        });
+    </script>
+</body>
+</html>
