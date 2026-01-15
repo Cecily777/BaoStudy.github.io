@@ -1,0 +1,2513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>英语单词学习射击游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c2e 0%, #1a1a3e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(79, 84, 200, 0.3);
+        }
+        
+        .game-header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 20, 50, 0.8);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .score-display, .lives-display, .timer-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .score-display span, .timer-display span {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .score-value, .timer-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .lives-display {
+            flex-direction: row;
+            gap: 8px;
+        }
+        
+        /* 纯CSS绘制的心形 */
+        .heart {
+            width: 28px;
+            height: 28px;
+            position: relative;
+            transform: rotate(45deg);
+            background-color: #ff4757;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .heart:before,
+        .heart:after {
+            content: "";
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #ff4757;
+            position: absolute;
+        }
+        
+        .heart:before {
+            top: -14px;
+            left: 0;
+        }
+        
+        .heart:after {
+            top: 0;
+            left: -14px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: rotate(45deg) scale(1); }
+            50% { transform: rotate(45deg) scale(1.1); }
+            100% { transform: rotate(45deg) scale(1); }
+        }
+        
+        /* 单词显示区域 - 更显眼 */
+        .word-display {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(20, 20, 50, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 5px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            border: 3px solid #4e54c8;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .word-display::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(78, 84, 200, 0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite linear;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .word-meaning {
+            font-size: 2.2rem;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .word-hint {
+            font-size: 1.1rem;
+            color: #8f94fb;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 4/3;
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-panel {
+            background: rgba(20, 20, 50, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .speed-control {
+            margin-bottom: 25px;
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #8f94fb;
+            border-bottom: 2px solid #4e54c8;
+            padding-bottom: 8px;
+        }
+        
+        .speed-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .speed-btn {
+            flex: 1;
+            padding: 12px 5px;
+            background-color: #2a2a5c;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .speed-btn.active {
+            background-color: #4e54c8;
+            box-shadow: 0 0 10px rgba(78, 84, 200, 0.7);
+        }
+        
+        .speed-btn:hover:not(.active) {
+            background-color: #3a3a6c;
+        }
+        
+        .touch-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            height: 200px;
+            margin-top: 10px;
+        }
+        
+        .touch-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(78, 84, 200, 0.7);
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s;
+            border: none;
+            outline: none;
+            position: relative;
+        }
+        
+        .touch-btn:active {
+            background-color: rgba(78, 84, 200, 1);
+            transform: scale(0.95);
+        }
+        
+        .touch-btn.fire {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .touch-btn.left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        
+        .touch-btn.right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        
+        /* 纯CSS绘制的图标 */
+        .icon-rocket {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+        
+        .icon-rocket:before {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 15px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 15px solid white;
+        }
+        
+        .icon-rocket:after {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+        
+        .icon-arrow-left {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+        
+        .icon-arrow-left:before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 20px;
+            height: 20px;
+            border-left: 5px solid white;
+            border-bottom: 5px solid white;
+            transform: rotate(45deg);
+        }
+        
+        .icon-arrow-left:after {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            width: 25px;
+            height: 5px;
+            background: white;
+        }
+        
+        .icon-arrow-right {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+        
+        .icon-arrow-right:before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            border-right: 5px solid white;
+            border-bottom: 5px solid white;
+            transform: rotate(-45deg);
+        }
+        
+        .icon-arrow-right:after {
+            content: "";
+            position: absolute;
+            top: 20px;
+            right: 10px;
+            width: 25px;
+            height: 5px;
+            background: white;
+        }
+        
+        .control-instructions {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .control-instructions p {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 10;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .game-message {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: #8f94fb;
+        }
+        
+        .final-score {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            color: gold;
+            font-weight: bold;
+        }
+        
+        .player-input {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            max-width: 300px;
+            margin-top: 20px;
+        }
+        
+        .player-input input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #4e54c8;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .player-input input:focus {
+            outline: none;
+            border-color: #8f94fb;
+            box-shadow: 0 0 10px rgba(143, 148, 251, 0.5);
+        }
+        
+        .game-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(78, 84, 200, 0.4);
+        }
+        
+        .game-btn:active {
+            transform: translateY(0);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 工具按钮区域 */
+        .tool-buttons {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .tool-btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(90deg, #8f94fb, #4e54c8);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tool-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(78, 84, 200, 0.4);
+        }
+        
+        /* CSV导入区域 */
+        .csv-import {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(20, 20, 50, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .csv-upload-area {
+            border: 2px dashed #4e54c8;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .csv-upload-area:hover {
+            background-color: rgba(78, 84, 200, 0.1);
+        }
+        
+        .csv-upload-area.dragover {
+            background-color: rgba(78, 84, 200, 0.2);
+            border-color: #8f94fb;
+        }
+        
+        .csv-instructions {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .csv-preview {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .csv-preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .csv-preview th, .csv-preview td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .csv-preview th {
+            background-color: rgba(78, 84, 200, 0.3);
+        }
+        
+        /* 学习结果展示 */
+        .learning-results {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(20, 20, 50, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .word-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .word-item.correct {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .word-item.incorrect {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .word-item .speak-btn {
+            background: none;
+            border: none;
+            color: #8f94fb;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        /* 排行榜 */
+        .leaderboard {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(20, 20, 50, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .leaderboard-list {
+            list-style-type: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .leaderboard-item:nth-child(1) {
+            background-color: rgba(255, 215, 0, 0.2);
+            border-left: 4px solid gold;
+        }
+        
+        .leaderboard-item:nth-child(2) {
+            background-color: rgba(192, 192, 192, 0.2);
+            border-left: 4px solid silver;
+        }
+        
+        .leaderboard-item:nth-child(3) {
+            background-color: rgba(205, 127, 50, 0.2);
+            border-left: 4px solid #cd7f32;
+        }
+        
+        .no-scores {
+            text-align: center;
+            padding: 30px;
+            color: #aaa;
+            font-style: italic;
+        }
+        
+        @media (max-width: 1024px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .right-panel {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .touch-controls {
+                height: 180px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .game-header {
+                padding: 12px 15px;
+            }
+            
+            .score-value, .timer-value {
+                font-size: 1.6rem;
+            }
+            
+            .word-meaning {
+                font-size: 1.8rem;
+            }
+            
+            .heart {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .heart:before,
+            .heart:after {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .heart:before {
+                top: -12px;
+            }
+            
+            .heart:after {
+                left: -12px;
+            }
+            
+            .control-panel {
+                padding: 15px;
+            }
+            
+            .touch-controls {
+                height: 160px;
+                gap: 12px;
+            }
+            
+            .icon-rocket,
+            .icon-arrow-left,
+            .icon-arrow-right {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .tool-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .score-display, .lives-display, .timer-display {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .speed-buttons {
+                flex-direction: column;
+            }
+            
+            .touch-controls {
+                height: 140px;
+            }
+        }
+        
+        /* 触摸滑动区域 */
+        .touch-swipe-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: none;
+        }
+        
+        /* 检测触摸设备 */
+        @media (hover: none) and (pointer: coarse) {
+            .touch-swipe-area {
+                display: block;
+            }
+        }
+        
+        /* 抖动效果 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 英语单词学习射击游戏</h1>
+            <p>射击正确的英语单词，学习英语词汇！</p>
+        </header>
+        
+        <div class="word-display" id="wordDisplay">
+            <div class="word-meaning" id="currentMeaning">准备开始游戏</div>
+            <div class="word-hint" id="wordHint">点击"开始游戏"按钮开始学习</div>
+        </div>
+        
+        <div class="game-header">
+            <div class="score-display">
+                <span>得分</span>
+                <div class="score-value" id="scoreValue">0</div>
+            </div>
+            <div class="lives-display">
+                <div class="heart" id="heart1"></div>
+                <div class="heart" id="heart2"></div>
+                <div class="heart" id="heart3"></div>
+            </div>
+            <div class="timer-display">
+                <span>时间</span>
+                <div class="timer-value" id="timerValue">60</div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <div class="game-container">
+                <canvas id="gameCanvas"></canvas>
+                <div class="touch-swipe-area" id="touchSwipeArea"></div>
+                
+                <div id="startScreen" class="game-overlay">
+                    <h2 class="game-message">英语单词学习射击游戏</h2>
+                    <p>陨石上显示3个英语单词选项</p>
+                    <p>游戏上方显示中文注释，射击对应的正确单词</p>
+                    <p>正确：加1分，朗读单词；错误：扣1分</p>
+                    <p>错误3次游戏结束，时间60秒</p>
+                    <p>请先导入包含选项的单词库</p>
+                    <button id="startBtn" class="game-btn">开始游戏</button>
+                </div>
+                
+                <div id="gameOverScreen" class="game-overlay hidden">
+                    <h2 class="game-message">游戏结束</h2>
+                    <p id="gameOverText">错误次数达到3次！</p>
+                    <div id="finalScoreDisplay" class="final-score">0 分</div>
+                    <div id="playerInputSection" class="player-input hidden">
+                        <input type="text" id="playerName" placeholder="输入姓名(英文/数字)" maxlength="8">
+                        <button id="saveScoreBtn" class="game-btn">保存分数</button>
+                    </div>
+                    <button id="restartBtn" class="game-btn">重新开始</button>
+                </div>
+                
+                <div id="gameCompleteScreen" class="game-overlay hidden">
+                    <h2 class="game-message">游戏完成！</h2>
+                    <div id="finalScoreComplete" class="final-score">0 分</div>
+                    <p>恭喜您成功完成挑战！</p>
+                    <div class="player-input">
+                        <input type="text" id="playerNameComplete" placeholder="输入姓名(英文/数字)" maxlength="8">
+                        <button id="saveScoreCompleteBtn" class="game-btn">保存分数到排行榜</button>
+                    </div>
+                    <button id="playAgainBtn" class="game-btn">再玩一次</button>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="control-panel">
+                    <div class="speed-control">
+                        <h2>陨石速度</h2>
+                        <div class="speed-buttons">
+                            <button class="speed-btn active" data-speed="1">慢速</button>
+                            <button class="speed-btn" data-speed="2">中速</button>
+                            <button class="speed-btn" data-speed="3">快速</button>
+                        </div>
+                    </div>
+                    
+                    <h2>触摸控制</h2>
+                    <div class="touch-controls">
+                        <button class="touch-btn fire" id="fireBtn">
+                            <div class="icon-rocket"></div>
+                        </button>
+                        <button class="touch-btn left" id="leftBtn">
+                            <div class="icon-arrow-left"></div>
+                        </button>
+                        <button class="touch-btn right" id="rightBtn">
+                            <div class="icon-arrow-right"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="control-instructions">
+                        <p><strong>游戏说明：</strong></p>
+                        <p>• 使用左右按钮移动飞船</p>
+                        <p>• 点击射击按钮发射子弹</p>
+                        <p>• 射击正确单词：加1分，朗读单词</p>
+                        <p>• 射击错误单词：扣1分，错误3次结束</p>
+                        <p>• 也可在游戏区域滑动控制飞船</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 工具按钮区域 -->
+        <div class="tool-buttons">
+            <button id="showCSVBtn" class="tool-btn">📁 导入单词库</button>
+            <button id="showLeaderboardBtn" class="tool-btn">🏆 查看排行榜</button>
+        </div>
+        
+        <!-- CSV导入区域 -->
+        <div class="csv-import hidden" id="csvImportSection">
+            <h2>📁 CSV单词库导入</h2>
+            <div class="csv-upload-area" id="csvUploadArea">
+                <p>点击或拖拽CSV文件到此区域</p>
+                <p>文件格式：中文注释,选项1,选项2,选项3,正确答案(1/2/3)</p>
+                <p>示例：苹果,apple,orange,banana,1</p>
+            </div>
+            <div class="csv-instructions">
+                <p><button id="downloadTemplateBtn" class="game-btn" style="padding: 10px 20px; margin-bottom: 10px;">下载CSV模板</button></p>
+                <p>当前单词库：<span id="wordCount">0</span> 个题目</p>
+                <p><button id="closeCSVBtn" class="game-btn" style="padding: 10px 20px; margin-top: 10px; background: linear-gradient(90deg, #c84e4e, #fb8f8f);">关闭</button></p>
+            </div>
+            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+            <div class="csv-preview" id="csvPreview"></div>
+        </div>
+        
+        <!-- 学习结果展示区域 -->
+        <div class="learning-results hidden" id="learningResults">
+            <h2>📚 本次学习结果</h2>
+            <div id="resultsSummary"></div>
+            <div class="word-list" id="wordList"></div>
+            <button id="closeResultsBtn" class="game-btn" style="margin-top: 20px;">关闭</button>
+        </div>
+        
+        <!-- 排行榜 -->
+        <div class="leaderboard hidden" id="leaderboardSection">
+            <h2>🏆 排行榜</h2>
+            <ul id="leaderboardList" class="leaderboard-list">
+                <li class="no-scores">暂无分数记录，开始游戏吧！</li>
+            </ul>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button id="clearLeaderboardBtn" class="game-btn" style="flex: 1; background: linear-gradient(90deg, #c84e4e, #fb8f8f);">清空排行榜</button>
+                <button id="closeLeaderboardBtn" class="game-btn" style="flex: 1;">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏变量
+        let canvas, ctx;
+        let gameState = {
+            running: false,
+            paused: false,
+            score: 0,
+            lives: 3,
+            timeLeft: 60,
+            asteroidsDestroyed: 0,
+            asteroidSpeed: 1,
+            gameTimer: null,
+            lastTime: 0,
+            deltaTime: 0,
+            maxAsteroids: 3, // 每次掉落3个陨石
+            asteroidCount: 0, // 当前陨石数量
+            wordBank: [], // 单词库，现在每个条目包含中文注释和3个选项
+            currentQuestion: null, // 当前显示的题目
+            correctAnswerIndex: 0, // 正确答案的索引(0,1,2对应选项1,2,3)
+            errors: 0, // 错误次数
+            maxErrors: 3, // 最大错误次数
+            usedQuestions: [], // 本次游戏中使用的所有题目
+            speechSynthesis: null // 语音合成
+        };
+        
+        // 游戏对象
+        let spaceship = {
+            x: 400,
+            y: 550,
+            width: 60,
+            height: 80,
+            speed: 350,
+            color: '#4e54c8',
+            velocityX: 0,
+            acceleration: 1200,
+            friction: 800
+        };
+        
+        let bullets = [];
+        let asteroids = [];
+        let explosions = [];
+        
+        // 触摸控制变量
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isTouching = false;
+        let touchMoveX = 0;
+        
+        // 默认单词库（如果没有导入CSV，使用这个）
+        const defaultWordBank = [
+            { meaning: "苹果", options: ["apple", "orange", "banana"], correctAnswer: 1 },
+            { meaning: "香蕉", options: ["banana", "grape", "pear"], correctAnswer: 1 },
+            { meaning: "猫", options: ["cat", "dog", "bird"], correctAnswer: 1 },
+            { meaning: "狗", options: ["dog", "cat", "rabbit"], correctAnswer: 1 },
+            { meaning: "大象", options: ["elephant", "lion", "tiger"], correctAnswer: 1 },
+            { meaning: "花", options: ["flower", "tree", "grass"], correctAnswer: 1 },
+            { meaning: "房子", options: ["house", "car", "school"], correctAnswer: 1 },
+            { meaning: "冰", options: ["ice", "water", "fire"], correctAnswer: 1 },
+            { meaning: "果汁", options: ["juice", "water", "milk"], correctAnswer: 1 },
+            { meaning: "国王", options: ["king", "queen", "prince"], correctAnswer: 1 }
+        ];
+        
+        // 初始化游戏
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // 设置画布尺寸
+            resizeCanvas();
+            
+            // 初始化事件监听器
+            initEventListeners();
+            
+            // 检测设备类型
+            detectDeviceType();
+            
+            // 加载单词库
+            loadWordBank();
+            
+            // 加载排行榜
+            loadLeaderboard();
+            
+            // 初始化语音合成
+            initSpeechSynthesis();
+            
+            // 绘制初始屏幕
+            drawStartScreen();
+            
+            // 开始游戏循环
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 调整画布尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            // 调整飞船位置
+            spaceship.x = canvas.width / 2;
+            spaceship.y = canvas.height - 100;
+        }
+        
+        // 检测设备类型
+        function detectDeviceType() {
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            
+            if (isTouchDevice) {
+                console.log("检测到触摸设备，启用触摸控制");
+                // 在触摸设备上，确保触摸控制可见
+                document.querySelector('.touch-controls').style.display = 'grid';
+            }
+        }
+        
+        // 初始化语音合成
+        function initSpeechSynthesis() {
+            if ('speechSynthesis' in window) {
+                gameState.speechSynthesis = window.speechSynthesis;
+                console.log("语音合成API可用");
+            } else {
+                console.log("语音合成API不可用");
+            }
+        }
+        
+        // 朗读单词
+        function speakWord(word) {
+            if (!gameState.speechSynthesis) return;
+            
+            // 停止当前任何语音
+            gameState.speechSynthesis.cancel();
+            
+            // 创建新的语音
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8; // 稍微慢一点
+            utterance.volume = 1;
+            
+            // 开始朗读
+            gameState.speechSynthesis.speak(utterance);
+        }
+        
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 窗口大小变化时重新调整画布
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 键盘控制（桌面设备）
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+            
+            // 触摸控制
+            const touchArea = document.getElementById('touchSwipeArea');
+            const fireBtn = document.getElementById('fireBtn');
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            
+            // 触摸滑动控制
+            touchArea.addEventListener('touchstart', handleTouchStart, { passive: false });
+            touchArea.addEventListener('touchmove', handleTouchMove, { passive: false });
+            touchArea.addEventListener('touchend', handleTouchEnd, { passive: false });
+            
+            // 触摸按钮控制
+            fireBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                shootBullet();
+                fireBtn.style.transform = 'scale(0.95)';
+                fireBtn.style.backgroundColor = 'rgba(78, 84, 200, 1)';
+            });
+            
+            fireBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                fireBtn.style.transform = 'scale(1)';
+                fireBtn.style.backgroundColor = 'rgba(78, 84, 200, 0.7)';
+            });
+            
+            leftBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                keys['ArrowLeft'] = true;
+                leftBtn.style.transform = 'scale(0.95)';
+                leftBtn.style.backgroundColor = 'rgba(78, 84, 200, 1)';
+            });
+            
+            leftBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                keys['ArrowLeft'] = false;
+                leftBtn.style.transform = 'scale(1)';
+                leftBtn.style.backgroundColor = 'rgba(78, 84, 200, 0.7)';
+            });
+            
+            rightBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                keys['ArrowRight'] = true;
+                rightBtn.style.transform = 'scale(0.95)';
+                rightBtn.style.backgroundColor = 'rgba(78, 84, 200, 1)';
+            });
+            
+            rightBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                keys['ArrowRight'] = false;
+                rightBtn.style.transform = 'scale(1)';
+                rightBtn.style.backgroundColor = 'rgba(78, 84, 200, 0.7)';
+            });
+            
+            // 鼠标事件（开发测试用）
+            touchArea.addEventListener('mousedown', handleMouseDown);
+            touchArea.addEventListener('mousemove', handleMouseMove);
+            touchArea.addEventListener('mouseup', handleMouseUp);
+            
+            // 游戏控制按钮
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('restartBtn').addEventListener('click', restartGame);
+            document.getElementById('playAgainBtn').addEventListener('click', restartGame);
+            document.getElementById('saveScoreBtn').addEventListener('click', saveScore);
+            document.getElementById('saveScoreCompleteBtn').addEventListener('click', saveScoreComplete);
+            document.getElementById('clearLeaderboardBtn').addEventListener('click', clearLeaderboard);
+            
+            // 速度控制按钮
+            const speedBtns = document.querySelectorAll('.speed-btn');
+            speedBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 移除所有按钮的active类
+                    speedBtns.forEach(b => b.classList.remove('active'));
+                    // 给当前按钮添加active类
+                    this.classList.add('active');
+                    // 更新陨石速度
+                    gameState.asteroidSpeed = parseInt(this.dataset.speed);
+                });
+            });
+            
+            // 工具按钮
+            document.getElementById('showCSVBtn').addEventListener('click', () => {
+                showSection('csvImportSection');
+            });
+            
+            document.getElementById('showLeaderboardBtn').addEventListener('click', () => {
+                showSection('leaderboardSection');
+                loadLeaderboard();
+            });
+            
+            document.getElementById('closeCSVBtn').addEventListener('click', () => {
+                hideSection('csvImportSection');
+            });
+            
+            document.getElementById('closeLeaderboardBtn').addEventListener('click', () => {
+                hideSection('leaderboardSection');
+            });
+            
+            document.getElementById('closeResultsBtn').addEventListener('click', () => {
+                hideSection('learningResults');
+            });
+            
+            // CSV导入功能
+            const csvUploadArea = document.getElementById('csvUploadArea');
+            const csvFileInput = document.getElementById('csvFileInput');
+            const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+            
+            // CSV文件拖拽上传
+            csvUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                csvUploadArea.classList.add('dragover');
+            });
+            
+            csvUploadArea.addEventListener('dragleave', () => {
+                csvUploadArea.classList.remove('dragover');
+            });
+            
+            csvUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                csvUploadArea.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                        parseCSVFile(file);
+                    } else {
+                        alert('请选择CSV文件');
+                    }
+                }
+            });
+            
+            // CSV文件点击上传
+            csvUploadArea.addEventListener('click', () => {
+                csvFileInput.click();
+            });
+            
+            csvFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    const file = e.target.files[0];
+                    parseCSVFile(file);
+                }
+            });
+            
+            // 下载CSV模板
+            downloadTemplateBtn.addEventListener('click', downloadCSVTemplate);
+        }
+        
+        // 显示特定区域
+        function showSection(sectionId) {
+            // 隐藏所有区域
+            hideAllSections();
+            
+            // 显示指定区域
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+        
+        // 隐藏特定区域
+        function hideSection(sectionId) {
+            document.getElementById(sectionId).classList.add('hidden');
+        }
+        
+        // 隐藏所有区域
+        function hideAllSections() {
+            hideSection('csvImportSection');
+            hideSection('leaderboardSection');
+            hideSection('learningResults');
+        }
+        
+        // 键盘控制处理
+        let keys = {};
+        
+        function handleKeyDown(e) {
+            keys[e.key] = true;
+            
+            // 防止空格键滚动页面
+            if (e.key === ' ' && gameState.running) {
+                e.preventDefault();
+                shootBullet();
+            }
+            
+            // 暂停游戏 (P键)
+            if (e.key === 'p' || e.key === 'P') {
+                togglePause();
+            }
+        }
+        
+        function handleKeyUp(e) {
+            keys[e.key] = false;
+        }
+        
+        // 触摸事件处理
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            isTouching = true;
+            touchMoveX = 0;
+        }
+        
+        function handleTouchMove(e) {
+            if (!isTouching || !gameState.running || gameState.paused) return;
+            
+            e.preventDefault();
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartX;
+            touchMoveX = deltaX;
+            
+            // 根据滑动距离控制飞船移动
+            const threshold = 10; // 滑动阈值
+            if (Math.abs(deltaX) > threshold) {
+                if (deltaX > 0) {
+                    keys['ArrowRight'] = true;
+                    keys['ArrowLeft'] = false;
+                } else {
+                    keys['ArrowLeft'] = true;
+                    keys['ArrowRight'] = false;
+                }
+            }
+            
+            touchStartX = touch.clientX;
+        }
+        
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            isTouching = false;
+            keys['ArrowLeft'] = false;
+            keys['ArrowRight'] = false;
+            
+            // 如果滑动距离很小，发射子弹
+            if (Math.abs(touchMoveX) < 20) {
+                shootBullet();
+            }
+        }
+        
+        // 鼠标事件处理（用于开发测试）
+        function handleMouseDown(e) {
+            e.preventDefault();
+            touchStartX = e.clientX;
+            touchStartY = e.clientY;
+            isTouching = true;
+            touchMoveX = 0;
+        }
+        
+        function handleMouseMove(e) {
+            if (!isTouching || !gameState.running || gameState.paused) return;
+            
+            e.preventDefault();
+            const deltaX = e.clientX - touchStartX;
+            touchMoveX = deltaX;
+            
+            // 根据移动距离控制飞船移动
+            const threshold = 10;
+            if (Math.abs(deltaX) > threshold) {
+                if (deltaX > 0) {
+                    keys['ArrowRight'] = true;
+                    keys['ArrowLeft'] = false;
+                } else {
+                    keys['ArrowLeft'] = true;
+                    keys['ArrowRight'] = false;
+                }
+            }
+            
+            touchStartX = e.clientX;
+        }
+        
+        function handleMouseUp(e) {
+            e.preventDefault();
+            isTouching = false;
+            keys['ArrowLeft'] = false;
+            keys['ArrowRight'] = false;
+            
+            // 如果移动距离很小，发射子弹
+            if (Math.abs(touchMoveX) < 20) {
+                shootBullet();
+            }
+        }
+        
+        // 游戏循环
+        function gameLoop(currentTime) {
+            // 计算时间增量
+            if (gameState.lastTime === 0) {
+                gameState.lastTime = currentTime;
+            }
+            gameState.deltaTime = (currentTime - gameState.lastTime) / 1000;
+            gameState.lastTime = currentTime;
+            
+            // 限制deltaTime避免卡顿
+            if (gameState.deltaTime > 0.1) {
+                gameState.deltaTime = 0.1;
+            }
+            
+            if (!gameState.running || gameState.paused) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制星空背景
+            drawBackground();
+            
+            // 处理输入
+            handleInput(gameState.deltaTime);
+            
+            // 更新游戏对象
+            updateBullets(gameState.deltaTime);
+            updateAsteroids(gameState.deltaTime);
+            updateExplosions(gameState.deltaTime);
+            
+            // 检测碰撞
+            checkCollisions();
+            
+            // 绘制游戏对象
+            drawSpaceship();
+            drawBullets();
+            drawAsteroids();
+            drawExplosions();
+            
+            // 继续游戏循环
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 绘制星空背景
+        function drawBackground() {
+            // 绘制深色背景
+            ctx.fillStyle = '#0c0c2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制星星
+            for (let i = 0; i < 80; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 1.2;
+                const opacity = Math.random() * 0.8 + 0.2;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.fill();
+            }
+        }
+        
+        // 处理输入
+        function handleInput(deltaTime) {
+            // 左移
+            if (keys['ArrowLeft'] || keys['Left'] || keys['a'] || keys['A']) {
+                spaceship.velocityX -= spaceship.acceleration * deltaTime;
+            }
+            
+            // 右移
+            if (keys['ArrowRight'] || keys['Right'] || keys['d'] || keys['D']) {
+                spaceship.velocityX += spaceship.acceleration * deltaTime;
+            }
+            
+            // 应用摩擦力
+            if (spaceship.velocityX > 0) {
+                spaceship.velocityX -= spaceship.friction * deltaTime;
+                if (spaceship.velocityX < 0) spaceship.velocityX = 0;
+            } else if (spaceship.velocityX < 0) {
+                spaceship.velocityX += spaceship.friction * deltaTime;
+                if (spaceship.velocityX > 0) spaceship.velocityX = 0;
+            }
+            
+            // 限制最大速度
+            const maxSpeed = spaceship.speed;
+            if (spaceship.velocityX > maxSpeed) spaceship.velocityX = maxSpeed;
+            if (spaceship.velocityX < -maxSpeed) spaceship.velocityX = -maxSpeed;
+            
+            // 更新飞船位置
+            spaceship.x += spaceship.velocityX * deltaTime;
+            
+            // 限制飞船不超出画布
+            if (spaceship.x < spaceship.width / 2) {
+                spaceship.x = spaceship.width / 2;
+                spaceship.velocityX = 0;
+            }
+            if (spaceship.x > canvas.width - spaceship.width / 2) {
+                spaceship.x = canvas.width - spaceship.width / 2;
+                spaceship.velocityX = 0;
+            }
+        }
+        
+        // 发射子弹
+        function shootBullet() {
+            if (!gameState.running || gameState.paused) return;
+            
+            bullets.push({
+                x: spaceship.x,
+                y: spaceship.y - spaceship.height / 2,
+                width: 6,
+                height: 25,
+                speed: 400,
+                color: '#8f94fb',
+                trail: []
+            });
+        }
+        
+        // 更新子弹位置
+        function updateBullets(deltaTime) {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                
+                // 更新子弹位置
+                bullet.y -= bullet.speed * deltaTime;
+                
+                // 添加轨迹点
+                bullet.trail.push({x: bullet.x, y: bullet.y});
+                if (bullet.trail.length > 5) {
+                    bullet.trail.shift();
+                }
+                
+                // 移除超出画布的子弹
+                if (bullet.y < 0) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+        
+        // 开始生成陨石
+        function startAsteroidGeneration() {
+            if (gameState.asteroidGenerator) {
+                clearInterval(gameState.asteroidGenerator);
+            }
+            
+            // 根据速度设置生成间隔
+            let interval;
+            switch(gameState.asteroidSpeed) {
+                case 1: interval = 3500; break; // 慢速
+                case 2: interval = 2800; break;  // 中速
+                case 3: interval = 2000; break;   // 快速
+                default: interval = 3000;
+            }
+            
+            gameState.asteroidGenerator = setInterval(() => {
+                // 检查当前陨石数量，如果为0则生成新的一组
+                if (gameState.asteroidCount === 0) {
+                    createAsteroidsWithOptions();
+                }
+            }, interval);
+        }
+        
+        // 创建带选项的陨石
+        function createAsteroidsWithOptions() {
+            if (!gameState.running || gameState.paused || gameState.wordBank.length === 0) return;
+            
+            // 从单词库中随机选择一个题目
+            const randomIndex = Math.floor(Math.random() * gameState.wordBank.length);
+            gameState.currentQuestion = gameState.wordBank[randomIndex];
+            
+            // 记录使用的题目
+            if (!gameState.usedQuestions.some(q => q.meaning === gameState.currentQuestion.meaning)) {
+                gameState.usedQuestions.push({
+                    ...gameState.currentQuestion,
+                    answered: false,
+                    correct: false,
+                    selectedOption: null
+                });
+            }
+            
+            // 更新单词显示
+            updateWordDisplay();
+            
+            // 创建陨石
+            asteroids = [];
+            gameState.asteroidCount = 0;
+            
+            for (let i = 0; i < 3; i++) {
+                const word = gameState.currentQuestion.options[i];
+                
+                // 陨石大小增加2倍
+                const size = Math.random() * 60 + 60; // 60-120像素
+                
+                // 速度整体调慢
+                const speed = gameState.asteroidSpeed * (Math.random() * 30 + 40);
+                
+                // 计算位置，使3个陨石平均分布
+                const sectionWidth = canvas.width / 3;
+                const minX = i * sectionWidth + size;
+                const maxX = (i + 1) * sectionWidth - size;
+                
+                // 所有陨石初始都为灰色，不区分正确/错误
+                asteroids.push({
+                    x: Math.random() * (maxX - minX) + minX,
+                    y: -size,
+                    width: size,
+                    height: size,
+                    speed: speed,
+                    color: '#888', // 所有陨石初始都为灰色
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.03,
+                    hit: false,
+                    hitTimer: 0,
+                    word: word,
+                    isCorrect: (i + 1) === gameState.currentQuestion.correctAnswer, // 正确答案索引
+                    optionIndex: i,
+                    originalColor: '#888'
+                });
+                
+                gameState.asteroidCount++;
+            }
+        }
+        
+        // 更新单词显示
+        function updateWordDisplay() {
+            if (gameState.currentQuestion) {
+                document.getElementById('currentMeaning').textContent = gameState.currentQuestion.meaning;
+                document.getElementById('wordHint').textContent = "射击正确的英语单词";
+            }
+        }
+        
+        // 更新陨石位置
+        function updateAsteroids(deltaTime) {
+            for (let i = asteroids.length - 1; i >= 0; i--) {
+                const asteroid = asteroids[i];
+                
+                // 更新陨石位置
+                asteroid.y += asteroid.speed * deltaTime;
+                asteroid.rotation += asteroid.rotationSpeed;
+                
+                // 更新击中效果计时器
+                if (asteroid.hit) {
+                    asteroid.hitTimer += deltaTime;
+                    if (asteroid.hitTimer > 0.15) { // 0.15秒后移除
+                        asteroids.splice(i, 1);
+                        gameState.asteroidCount = asteroids.length;
+                        continue;
+                    }
+                }
+                
+                // 移除超出画布的陨石
+                if (asteroid.y > canvas.height) {
+                    asteroids.splice(i, 1);
+                    gameState.asteroidCount = asteroids.length;
+                }
+            }
+            
+            // 如果所有陨石都被清除，准备生成下一组
+            if (gameState.asteroidCount === 0 && gameState.running && !gameState.paused) {
+                // 可以立即生成下一组，或者等待定时器
+            }
+        }
+        
+        // 创建爆炸效果
+        function createExplosion(x, y, size) {
+            const particleCount = Math.floor(size / 5) + 10;
+            const particles = [];
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 4 + 2,
+                    speedX: (Math.random() - 0.5) * 300,
+                    speedY: (Math.random() - 0.5) * 300,
+                    color: `hsl(${Math.random() * 30 + 10}, 100%, 60%)`,
+                    life: 1.0,
+                    decay: Math.random() * 0.02 + 0.01
+                });
+            }
+            
+            explosions.push({
+                particles: particles,
+                life: 1.0
+            });
+        }
+        
+        // 更新爆炸效果
+        function updateExplosions(deltaTime) {
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                const explosion = explosions[i];
+                explosion.life -= deltaTime * 0.5;
+                
+                if (explosion.life <= 0) {
+                    explosions.splice(i, 1);
+                    continue;
+                }
+                
+                for (let j = explosion.particles.length - 1; j >= 0; j--) {
+                    const particle = explosion.particles[j];
+                    particle.x += particle.speedX * deltaTime;
+                    particle.y += particle.speedY * deltaTime;
+                    particle.life -= particle.decay;
+                    
+                    if (particle.life <= 0) {
+                        explosion.particles.splice(j, 1);
+                    }
+                }
+                
+                if (explosion.particles.length === 0) {
+                    explosions.splice(i, 1);
+                }
+            }
+        }
+        
+        // 检测碰撞
+        function checkCollisions() {
+            // 检测子弹与陨石的碰撞
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                for (let j = asteroids.length - 1; j >= 0; j--) {
+                    if (checkCollision(bullets[i], asteroids[j]) && !asteroids[j].hit) {
+                        const asteroid = asteroids[j];
+                        
+                        // 标记陨石为被击中
+                        asteroid.hit = true;
+                        
+                        // 判断是否正确
+                        if (asteroid.isCorrect) {
+                            // 正确：绿色爆炸
+                            asteroid.color = '#4CAF50';
+                            createExplosion(
+                                asteroid.x + asteroid.width / 2,
+                                asteroid.y + asteroid.height / 2,
+                                asteroid.width
+                            );
+                            
+                            // 增加分数
+                            gameState.score += 1;
+                            
+                            // 朗读单词
+                            speakWord(asteroid.word);
+                            
+                            // 更新已使用题目的状态
+                            const usedQuestionIndex = gameState.usedQuestions.findIndex(q => q.meaning === gameState.currentQuestion.meaning);
+                            if (usedQuestionIndex !== -1) {
+                                gameState.usedQuestions[usedQuestionIndex].answered = true;
+                                gameState.usedQuestions[usedQuestionIndex].correct = true;
+                                gameState.usedQuestions[usedQuestionIndex].selectedOption = asteroid.optionIndex + 1;
+                            }
+                            
+                            // 显示正确提示
+                            showWordFeedback(true, asteroid.word);
+                        } else {
+                            // 错误：红色爆炸
+                            asteroid.color = '#ff4444';
+                            createExplosion(
+                                asteroid.x + asteroid.width / 2,
+                                asteroid.y + asteroid.height / 2,
+                                asteroid.width
+                            );
+                            
+                            // 减少分数
+                            gameState.score = Math.max(0, gameState.score - 1);
+                            
+                            // 增加错误次数
+                            gameState.errors++;
+                            
+                            // 更新已使用题目的状态
+                            const usedQuestionIndex = gameState.usedQuestions.findIndex(q => q.meaning === gameState.currentQuestion.meaning);
+                            if (usedQuestionIndex !== -1) {
+                                gameState.usedQuestions[usedQuestionIndex].answered = true;
+                                gameState.usedQuestions[usedQuestionIndex].correct = false;
+                                gameState.usedQuestions[usedQuestionIndex].selectedOption = asteroid.optionIndex + 1;
+                            }
+                            
+                            // 显示错误提示
+                            showWordFeedback(false, asteroid.word);
+                            
+                            // 检查是否达到最大错误次数
+                            if (gameState.errors >= gameState.maxErrors) {
+                                gameOver(false);
+                                return;
+                            }
+                        }
+                        
+                        // 移除子弹
+                        bullets.splice(i, 1);
+                        
+                        // 更新UI
+                        updateUI();
+                        
+                        // 跳出内层循环
+                        break;
+                    }
+                }
+            }
+            
+            // 检测飞船与陨石的碰撞
+            for (let i = asteroids.length - 1; i >= 0; i--) {
+                if (checkCollision(spaceship, asteroids[i]) && !asteroids[i].hit) {
+                    // 标记陨石为被击中
+                    asteroids[i].hit = true;
+                    asteroids[i].color = '#ff4444';
+                    
+                    // 创建爆炸效果
+                    createExplosion(
+                        asteroids[i].x + asteroids[i].width / 2,
+                        asteroids[i].y + asteroids[i].height / 2,
+                        asteroids[i].width
+                    );
+                    
+                    // 减少生命值
+                    gameState.lives--;
+                    gameState.score = Math.max(0, gameState.score - 1);
+                    
+                    // 增加错误次数
+                    gameState.errors++;
+                    
+                    // 更新UI
+                    updateUI();
+                    
+                    // 创建飞船受击效果
+                    createExplosion(
+                        spaceship.x,
+                        spaceship.y,
+                        30
+                    );
+                    
+                    // 检查游戏是否结束
+                    if (gameState.lives <= 0 || gameState.errors >= gameState.maxErrors) {
+                        gameOver(false);
+                    }
+                    
+                    // 跳出循环
+                    break;
+                }
+            }
+        }
+        
+        // 显示单词反馈
+        function showWordFeedback(isCorrect, word) {
+            const wordDisplay = document.getElementById('wordDisplay');
+            
+            if (isCorrect) {
+                wordDisplay.style.backgroundColor = 'rgba(76, 175, 80, 0.2)';
+                wordDisplay.style.border = '3px solid #4CAF50';
+                
+                // 显示正确消息
+                document.getElementById('wordHint').textContent = `正确！ ${word}`;
+                
+                // 1.5秒后恢复
+                setTimeout(() => {
+                    wordDisplay.style.backgroundColor = '';
+                    wordDisplay.style.border = '';
+                    document.getElementById('wordHint').textContent = "射击正确的英语单词";
+                }, 1500);
+            } else {
+                // 添加抖动效果
+                wordDisplay.classList.add('shake');
+                
+                wordDisplay.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
+                wordDisplay.style.border = '3px solid #e74c3c';
+                
+                // 显示错误消息
+                document.getElementById('wordHint').textContent = `错误！ ${word}`;
+                
+                // 1.5秒后恢复
+                setTimeout(() => {
+                    wordDisplay.classList.remove('shake');
+                    wordDisplay.style.backgroundColor = '';
+                    wordDisplay.style.border = '';
+                    document.getElementById('wordHint').textContent = "射击正确的英语单词";
+                }, 1500);
+            }
+        }
+        
+        // 碰撞检测函数
+        function checkCollision(obj1, obj2) {
+            // 简化碰撞检测 - 使用圆形检测（更适合不规则形状）
+            const dx = (obj1.x) - (obj2.x + obj2.width / 2);
+            const dy = (obj1.y) - (obj2.y + obj2.height / 2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // 根据对象大小确定碰撞半径
+            const radius1 = Math.min(obj1.width, obj1.height) / 2;
+            const radius2 = Math.min(obj2.width, obj2.height) / 2;
+            
+            return distance < (radius1 + radius2);
+        }
+        
+        // 绘制飞船
+        function drawSpaceship() {
+            // 绘制飞船主体
+            ctx.save();
+            ctx.translate(spaceship.x, spaceship.y);
+            
+            // 飞船主体
+            ctx.fillStyle = spaceship.color;
+            ctx.beginPath();
+            ctx.moveTo(0, -spaceship.height / 2);
+            ctx.lineTo(-spaceship.width / 2, spaceship.height / 2);
+            ctx.lineTo(spaceship.width / 2, spaceship.height / 2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 飞船驾驶舱
+            ctx.fillStyle = '#8f94fb';
+            ctx.beginPath();
+            ctx.arc(0, -spaceship.height / 6, spaceship.width / 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 飞船推进器
+            ctx.fillStyle = '#ff9900';
+            ctx.beginPath();
+            ctx.ellipse(0, spaceship.height / 2 + 5, spaceship.width / 4, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 推进器火焰
+            const flameHeight = 15 + Math.sin(Date.now() / 100) * 5;
+            ctx.fillStyle = '#ff3300';
+            ctx.beginPath();
+            ctx.ellipse(0, spaceship.height / 2 + 15, spaceship.width / 6, flameHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // 绘制子弹
+        function drawBullets() {
+            for (let bullet of bullets) {
+                // 绘制子弹轨迹
+                for (let i = 0; i < bullet.trail.length; i++) {
+                    const point = bullet.trail[i];
+                    const alpha = i / bullet.trail.length;
+                    ctx.fillStyle = `rgba(143, 148, 251, ${alpha * 0.5})`;
+                    ctx.fillRect(
+                        point.x - bullet.width / 2 * alpha,
+                        point.y,
+                        bullet.width * alpha,
+                        bullet.height * alpha
+                    );
+                }
+                
+                // 绘制子弹主体
+                ctx.fillStyle = bullet.color;
+                ctx.fillRect(bullet.x - bullet.width / 2, bullet.y, bullet.width, bullet.height);
+                
+                // 子弹光效
+                ctx.fillStyle = 'white';
+                ctx.fillRect(bullet.x - bullet.width / 4, bullet.y, bullet.width / 2, bullet.height / 2);
+            }
+        }
+        
+        // 绘制陨石
+        function drawAsteroids() {
+            for (let asteroid of asteroids) {
+                ctx.save();
+                ctx.translate(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
+                ctx.rotate(asteroid.rotation);
+                
+                // 绘制陨石
+                ctx.fillStyle = asteroid.color;
+                ctx.beginPath();
+                
+                // 创建不规则形状
+                const sides = 8;
+                const radius = asteroid.width / 2;
+                
+                for (let i = 0; i < sides; i++) {
+                    const angle = (i / sides) * Math.PI * 2;
+                    const distance = radius * (0.7 + Math.random() * 0.3);
+                    const x = Math.cos(angle) * distance;
+                    const y = Math.sin(angle) * distance;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.closePath();
+                ctx.fill();
+                
+                // 陨石纹理（如果未被击中）
+                if (!asteroid.hit) {
+                    ctx.fillStyle = '#666';
+                    for (let i = 0; i < 3; i++) {
+                        const x = (Math.random() - 0.5) * radius;
+                        const y = (Math.random() - 0.5) * radius;
+                        const r = Math.random() * 3 + 2;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else {
+                    // 被击中时的裂纹效果
+                    ctx.strokeStyle = asteroid.isCorrect ? '#4CAF50' : '#ff0000';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const startAngle = Math.random() * Math.PI * 2;
+                        const endAngle = startAngle + Math.random() * Math.PI / 4;
+                        const crackRadius = radius * (0.3 + Math.random() * 0.7);
+                        ctx.arc(0, 0, crackRadius, startAngle, endAngle);
+                    }
+                    ctx.stroke();
+                }
+                
+                // 绘制单词
+                if (asteroid.word) {
+                    ctx.restore();
+                    ctx.save();
+                    
+                    // 设置文本样式
+                    ctx.fillStyle = asteroid.hit ? 
+                        (asteroid.isCorrect ? '#4CAF50' : '#ff4444') : '#FFFFFF';
+                    ctx.font = `bold ${Math.max(14, asteroid.width / 5)}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    // 绘制单词
+                    const lines = splitTextIntoLines(asteroid.word, asteroid.width - 20);
+                    const lineHeight = 20;
+                    const startY = asteroid.y + asteroid.height / 2 - (lines.length - 1) * lineHeight / 2;
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        ctx.fillText(lines[i], asteroid.x + asteroid.width / 2, startY + i * lineHeight);
+                    }
+                    
+                    ctx.restore();
+                } else {
+                    ctx.restore();
+                }
+            }
+        }
+        
+        // 将文本分割成多行以适应宽度
+        function splitTextIntoLines(text, maxWidth) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + " " + word).width;
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+        
+        // 绘制爆炸效果
+        function drawExplosions() {
+            for (let explosion of explosions) {
+                for (let particle of explosion.particles) {
+                    ctx.globalAlpha = particle.life;
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            ctx.globalAlpha = 1.0;
+        }
+        
+        // 绘制开始屏幕
+        function drawStartScreen() {
+            ctx.fillStyle = '#0c0c2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 2rem Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('英语单词学习射击游戏', canvas.width / 2, canvas.height / 2 - 60);
+            
+            ctx.font = '1.2rem Arial';
+            ctx.fillText('陨石上显示3个英语单词选项', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('游戏上方显示中文注释，射击对应的正确单词', canvas.width / 2, canvas.height / 2 + 30);
+            ctx.fillText('正确：加1分，朗读单词；错误：扣1分', canvas.width / 2, canvas.height / 2 + 60);
+            ctx.fillText('错误3次游戏结束，时间60秒', canvas.width / 2, canvas.height / 2 + 90);
+            
+            ctx.fillStyle = '#4e54c8';
+            ctx.font = 'bold 1.5rem Arial';
+            ctx.fillText('点击"开始游戏"按钮开始', canvas.width / 2, canvas.height / 2 + 150);
+        }
+        
+        // 开始游戏
+        function startGame() {
+            // 检查是否有单词库
+            if (gameState.wordBank.length === 0) {
+                alert("请先导入单词库！");
+                showSection('csvImportSection');
+                return;
+            }
+            
+            // 重置游戏状态
+            gameState.running = true;
+            gameState.paused = false;
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.timeLeft = 60;
+            gameState.asteroidsDestroyed = 0;
+            gameState.lastTime = 0;
+            gameState.asteroidCount = 0;
+            gameState.errors = 0;
+            gameState.usedQuestions = [];
+            gameState.currentQuestion = null;
+            
+            // 清空游戏对象
+            bullets = [];
+            asteroids = [];
+            explosions = [];
+            
+            // 重置飞船位置和速度
+            spaceship.x = canvas.width / 2;
+            spaceship.y = canvas.height - 100;
+            spaceship.velocityX = 0;
+            
+            // 更新UI
+            updateUI();
+            
+            // 隐藏学习结果
+            document.getElementById('learningResults').classList.add('hidden');
+            
+            // 隐藏开始屏幕
+            document.getElementById('startScreen').classList.add('hidden');
+            
+            // 开始计时器
+            startTimer();
+            
+            // 开始生成陨石
+            startAsteroidGeneration();
+            
+            // 生成第一组陨石
+            setTimeout(() => {
+                createAsteroidsWithOptions();
+            }, 500);
+        }
+        
+        // 开始计时器
+        function startTimer() {
+            if (gameState.gameTimer) {
+                clearInterval(gameState.gameTimer);
+            }
+            
+            gameState.gameTimer = setInterval(() => {
+                if (!gameState.paused && gameState.running) {
+                    gameState.timeLeft--;
+                    updateUI();
+                    
+                    if (gameState.timeLeft <= 0) {
+                        gameOver(true);
+                    }
+                }
+            }, 1000);
+        }
+        
+        // 更新UI
+        function updateUI() {
+            // 更新得分
+            document.getElementById('scoreValue').textContent = gameState.score;
+            
+            // 更新时间
+            document.getElementById('timerValue').textContent = gameState.timeLeft;
+            
+            // 更新生命值（爱心）
+            const hearts = ['heart1', 'heart2', 'heart3'];
+            for (let i = 0; i < 3; i++) {
+                const heart = document.getElementById(hearts[i]);
+                if (i < gameState.lives) {
+                    heart.style.display = 'block';
+                } else {
+                    heart.style.display = 'none';
+                }
+            }
+        }
+        
+        // 游戏结束
+        function gameOver(completed) {
+            // 停止游戏
+            gameState.running = false;
+            
+            // 清除计时器和陨石生成器
+            clearInterval(gameState.gameTimer);
+            clearInterval(gameState.asteroidGenerator);
+            
+            if (completed) {
+                // 游戏完成
+                document.getElementById('finalScoreComplete').textContent = `${gameState.score} 分`;
+                document.getElementById('gameCompleteScreen').classList.remove('hidden');
+                
+                // 显示学习结果
+                showLearningResults();
+            } else {
+                // 游戏失败
+                document.getElementById('gameOverText').textContent = `错误次数达到${gameState.maxErrors}次！`;
+                document.getElementById('finalScoreDisplay').textContent = `${gameState.score} 分`;
+                document.getElementById('playerInputSection').classList.add('hidden');
+                document.getElementById('gameOverScreen').classList.remove('hidden');
+                
+                // 显示学习结果
+                showLearningResults();
+            }
+        }
+        
+        // 显示学习结果
+        function showLearningResults() {
+            const learningResults = document.getElementById('learningResults');
+            const resultsSummary = document.getElementById('resultsSummary');
+            const wordList = document.getElementById('wordList');
+            
+            // 计算统计
+            const totalQuestions = gameState.usedQuestions.length;
+            const answeredQuestions = gameState.usedQuestions.filter(q => q.answered).length;
+            const correctQuestions = gameState.usedQuestions.filter(q => q.correct).length;
+            const accuracy = answeredQuestions > 0 ? Math.round((correctQuestions / answeredQuestions) * 100) : 0;
+            
+            // 更新统计信息
+            resultsSummary.innerHTML = `
+                <p>本次游戏学习了 <strong>${totalQuestions}</strong> 个题目</p>
+                <p>回答了 <strong>${answeredQuestions}</strong> 个，正确 <strong>${correctQuestions}</strong> 个</p>
+                <p>准确率: <strong>${accuracy}%</strong></p>
+                <p>最终得分: <strong>${gameState.score}</strong> 分</p>
+            `;
+            
+            // 清空题目列表
+            wordList.innerHTML = '';
+            
+            // 添加题目到列表
+            gameState.usedQuestions.forEach(question => {
+                const wordItem = document.createElement('div');
+                wordItem.className = `word-item ${question.correct ? 'correct' : question.answered ? 'incorrect' : ''}`;
+                
+                // 获取用户选择的选项
+                let selectedText = "";
+                if (question.selectedOption) {
+                    selectedText = ` (选择了: ${question.options[question.selectedOption-1]})`;
+                }
+                
+                wordItem.innerHTML = `
+                    <div>
+                        <strong>${question.meaning}</strong><br>
+                        选项: 1. ${question.options[0]}, 2. ${question.options[1]}, 3. ${question.options[2]}<br>
+                        正确答案: ${question.correctAnswer} (${question.options[question.correctAnswer-1]})
+                        ${selectedText}
+                    </div>
+                    <div>
+                        ${question.answered ? (question.correct ? '✅ 正确' : '❌ 错误') : '⏳ 未回答'}
+                        <button class="speak-btn" data-word="${question.options[question.correctAnswer-1]}">🔊</button>
+                    </div>
+                `;
+                
+                wordList.appendChild(wordItem);
+            });
+            
+            // 为朗读按钮添加事件监听
+            wordList.querySelectorAll('.speak-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const word = btn.getAttribute('data-word');
+                    speakWord(word);
+                });
+            });
+            
+            // 显示学习结果区域
+            learningResults.classList.remove('hidden');
+            showSection('learningResults');
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            // 隐藏游戏结束/完成屏幕
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('gameCompleteScreen').classList.add('hidden');
+            
+            // 隐藏学习结果
+            document.getElementById('learningResults').classList.add('hidden');
+            
+            // 开始新游戏
+            startGame();
+        }
+        
+        // 保存分数（游戏失败时）
+        function saveScore() {
+            const playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                alert('请输入您的姓名！');
+                return;
+            }
+            
+            saveToLeaderboard(playerName, gameState.score);
+            document.getElementById('playerInputSection').classList.add('hidden');
+            alert('分数已保存！');
+        }
+        
+        // 保存分数（游戏完成时）
+        function saveScoreComplete() {
+            const playerName = document.getElementById('playerNameComplete').value.trim();
+            if (!playerName) {
+                alert('请输入您的姓名！');
+                return;
+            }
+            
+            saveToLeaderboard(playerName, gameState.score);
+            alert('分数已保存到排行榜！');
+        }
+        
+        // 保存到排行榜
+        function saveToLeaderboard(name, score) {
+            // 获取现有排行榜
+            let leaderboard = JSON.parse(localStorage.getItem('spaceShooterLeaderboard')) || [];
+            
+            // 添加新分数
+            leaderboard.push({
+                name: name,
+                score: score,
+                date: new Date().toLocaleDateString()
+            });
+            
+            // 按分数排序
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // 只保留前10名
+            leaderboard = leaderboard.slice(0, 10);
+            
+            // 保存到本地存储
+            localStorage.setItem('spaceShooterLeaderboard', JSON.stringify(leaderboard));
+            
+            // 更新排行榜显示
+            loadLeaderboard();
+        }
+        
+        // 加载排行榜
+        function loadLeaderboard() {
+            const leaderboard = JSON.parse(localStorage.getItem('spaceShooterLeaderboard')) || [];
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            // 清空列表
+            leaderboardList.innerHTML = '';
+            
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<li class="no-scores">暂无分数记录，开始游戏吧！</li>';
+                return;
+            }
+            
+            // 添加排行榜条目
+            leaderboard.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item';
+                li.innerHTML = `
+                    <span>${index + 1}. ${entry.name}</span>
+                    <span>${entry.score} 分</span>
+                    <span>${entry.date}</span>
+                `;
+                leaderboardList.appendChild(li);
+            });
+        }
+        
+        // 清空排行榜
+        function clearLeaderboard() {
+            if (confirm('确定要清空排行榜吗？')) {
+                localStorage.removeItem('spaceShooterLeaderboard');
+                loadLeaderboard();
+                alert('排行榜已清空！');
+            }
+        }
+        
+        // 加载单词库
+        function loadWordBank() {
+            // 从localStorage加载单词库，如果没有则使用默认单词库
+            const savedWordBank = localStorage.getItem('wordBank');
+            if (savedWordBank) {
+                try {
+                    gameState.wordBank = JSON.parse(savedWordBank);
+                    console.log(`从本地存储加载了 ${gameState.wordBank.length} 个题目`);
+                } catch (e) {
+                    console.error('解析单词库失败，使用默认单词库', e);
+                    gameState.wordBank = [...defaultWordBank];
+                }
+            } else {
+                gameState.wordBank = [...defaultWordBank];
+                console.log(`使用默认单词库，共 ${gameState.wordBank.length} 个题目`);
+            }
+            
+            // 更新单词计数显示
+            updateWordCount();
+        }
+        
+        // 保存单词库
+        function saveWordBank() {
+            localStorage.setItem('wordBank', JSON.stringify(gameState.wordBank));
+            console.log(`单词库已保存，共 ${gameState.wordBank.length} 个题目`);
+            updateWordCount();
+        }
+        
+        // 更新单词计数显示
+        function updateWordCount() {
+            document.getElementById('wordCount').textContent = gameState.wordBank.length;
+        }
+        
+        // 解析CSV文件
+        function parseCSVFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseCSVContent(content);
+            };
+            
+            reader.onerror = function() {
+                alert('读取文件失败，请重试');
+            };
+            
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        // 解析CSV内容
+        function parseCSVContent(content) {
+            const lines = content.split('\n').filter(line => line.trim() !== '');
+            const newQuestions = [];
+            
+            // 跳过表头（如果第一行是表头）
+            let startLine = 0;
+            if (lines.length > 0 && lines[0].toLowerCase().includes('中文注释')) {
+                startLine = 1;
+            }
+            
+            for (let i = startLine; i < lines.length; i++) {
+                const line = lines[i];
+                // 简单的CSV解析，处理逗号分隔
+                let parts = [];
+                let inQuotes = false;
+                let currentPart = '';
+                
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        parts.push(currentPart.trim());
+                        currentPart = '';
+                    } else {
+                        currentPart += char;
+                    }
+                }
+                parts.push(currentPart.trim());
+                
+                // 移除引号
+                parts = parts.map(part => part.replace(/^"(.*)"$/, '$1'));
+                
+                if (parts.length >= 5) {
+                    const meaning = parts[0].trim();
+                    const option1 = parts[1].trim();
+                    const option2 = parts[2].trim();
+                    const option3 = parts[3].trim();
+                    const correctAnswer = parseInt(parts[4].trim());
+                    
+                    if (meaning && option1 && option2 && option3 && (correctAnswer >= 1 && correctAnswer <= 3)) {
+                        newQuestions.push({ 
+                            meaning, 
+                            options: [option1, option2, option3], 
+                            correctAnswer 
+                        });
+                    }
+                }
+            }
+            
+            if (newQuestions.length === 0) {
+                alert('CSV文件中没有找到有效的题目数据');
+                return;
+            }
+            
+            // 添加到单词库
+            gameState.wordBank = [...newQuestions];
+            saveWordBank();
+            
+            // 显示预览
+            showCSVPreview(newQuestions);
+            
+            alert(`成功导入 ${newQuestions.length} 个题目`);
+        }
+        
+        // 显示CSV预览
+        function showCSVPreview(questions) {
+            const preview = document.getElementById('csvPreview');
+            
+            if (questions.length === 0) {
+                preview.innerHTML = '<p>没有数据</p>';
+                return;
+            }
+            
+            let html = '<table>';
+            html += '<tr><th>中文注释</th><th>选项1</th><th>选项2</th><th>选项3</th><th>正确答案</th></tr>';
+            
+            // 显示前10行
+            const displayCount = Math.min(10, questions.length);
+            for (let i = 0; i < displayCount; i++) {
+                html += `<tr><td>${questions[i].meaning}</td><td>${questions[i].options[0]}</td><td>${questions[i].options[1]}</td><td>${questions[i].options[2]}</td><td>${questions[i].correctAnswer}</td></tr>`;
+            }
+            
+            if (questions.length > displayCount) {
+                html += `<tr><td colspan="5">... 还有 ${questions.length - displayCount} 个题目</td></tr>`;
+            }
+            
+            html += '</table>';
+            preview.innerHTML = html;
+        }
+        
+        // 下载CSV模板 - 修复中文乱码问题
+        function downloadCSVTemplate() {
+            // 使用UTF-8编码，添加BOM头确保中文正常显示
+            const BOM = '\uFEFF';
+            const template = "中文注释,选项1,选项2,选项3,正确答案\n苹果,apple,orange,banana,1\n香蕉,banana,grape,pear,1\n猫,cat,dog,bird,1\n狗,dog,cat,rabbit,1\n大象,elephant,lion,tiger,1\n花,flower,tree,grass,1\n房子,house,car,school,1\n冰,ice,water,fire,1\n果汁,juice,water,milk,1\n国王,king,queen,prince,1";
+            
+            const blob = new Blob([BOM + template], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '单词库模板.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // 暂停/继续游戏（保留功能但移除按钮）
+        function togglePause() {
+            if (!gameState.running) return;
+            
+            gameState.paused = !gameState.paused;
+        }
+        
+        // 初始化游戏
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!-- 在页面的合适位置添加返回按钮 -->
+<div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
+    <a href="../portal.html" style="
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)';"
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
+        ← 返回首页
+    </a>
+</div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>笼包积分夺宝阁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 20px 0;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: #FFD700;
+        }
+        
+        .logo-text h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .logo-text p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .user-info {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #6a11cb;
+        }
+        
+        .user-details h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        .user-details p {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #FFD700;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 24px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn:hover, .nav-btn.active {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #6a11cb;
+        }
+        
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .category-tab {
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category-tab.active {
+            background-color: #6a11cb;
+            color: white;
+        }
+        
+        .points-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .point-item {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-left: 5px solid #6a11cb;
+        }
+        
+        .point-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .point-item.positive {
+            border-left-color: #2ecc71;
+        }
+        
+        .point-item.negative {
+            border-left-color: #e74c3c;
+        }
+        
+        .point-item.highlight {
+            background-color: #fff8e1;
+            border-left-color: #FFD700;
+        }
+        
+        .point-info {
+            flex: 1;
+        }
+        
+        .point-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .point-info p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .point-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .point-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: right;
+        }
+        
+        .point-value.positive {
+            color: #2ecc71;
+        }
+        
+        .point-value.negative {
+            color: #e74c3c;
+        }
+        
+        .point-button, .wish-add-btn, .wish-fulfill-btn, .spend-button {
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .point-button {
+            background-color: #6a11cb;
+        }
+        
+        .point-button:hover {
+            background-color: #5a0cb3;
+        }
+        
+        .point-button.positive {
+            background-color: #2ecc71;
+        }
+        
+        .point-button.positive:hover {
+            background-color: #27ae60;
+        }
+        
+        .point-button.negative {
+            background-color: #e74c3c;
+        }
+        
+        .point-button.negative:hover {
+            background-color: #c0392b;
+        }
+        
+        .point-button.disabled, .wish-add-btn.disabled, .spend-button.disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .point-button.disabled:hover, .wish-add-btn.disabled:hover, .spend-button.disabled:hover {
+            background-color: #bdc3c7;
+            transform: none;
+        }
+        
+        .spend-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .spend-card {
+            background-color: #f9f9f9;
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .spend-card:hover {
+            transform: translateY(-5px);
+            border-color: #6a11cb;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.1);
+        }
+        
+        .spend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .spend-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .spend-cost {
+            background-color: #6a11cb;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .spend-description {
+            color: #666;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .spend-button {
+            padding: 12px 20px;
+            background-color: #6a11cb;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .spend-button:hover {
+            background-color: #5a0cb3;
+            transform: translateY(-2px);
+        }
+        
+        .wish-container {
+            margin-top: 20px;
+        }
+        
+        .wish-item {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .wish-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .wish-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .wish-description {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .wish-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .wish-stars {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wish-star {
+            width: 24px;
+            height: 24px;
+            position: relative;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        
+        .wish-star:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ddd;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .wish-star.filled:before {
+            background: #FFD700;
+        }
+        
+        .wish-add-btn {
+            background-color: #FFD700;
+            color: #333;
+        }
+        
+        .wish-add-btn:hover {
+            background-color: #FFC107;
+        }
+        
+        .wish-fulfill-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .wish-fulfill-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .records-container {
+            margin-top: 20px;
+        }
+        
+        .records-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .record-item {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #6a11cb;
+        }
+        
+        .record-item.positive {
+            border-left-color: #2ecc71;
+        }
+        
+        .record-item.negative {
+            border-left-color: #e74c3c;
+        }
+        
+        .record-item.spend {
+            border-left-color: #FF9800;
+        }
+        
+        .record-info {
+            flex: 1;
+        }
+        
+        .record-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .record-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .record-points {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .record-points.positive {
+            color: #2ecc71;
+        }
+        
+        .record-points.negative {
+            color: #e74c3c;
+        }
+        
+        .record-points.spend {
+            color: #FF9800;
+        }
+        
+        .parent-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .parent-btn {
+            padding: 12px 20px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .parent-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .parent-btn.reset {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .parent-btn.reset:hover {
+            background-color: #c0392b;
+        }
+        
+        .parent-btn.restore {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .parent-btn.restore:hover {
+            background-color: #27ae60;
+        }
+        
+        .parent-btn.clear {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .parent-btn.clear:hover {
+            background-color: #d68910;
+        }
+        
+        .parent-btn.adjust {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .parent-btn.adjust:hover {
+            background-color: #8e44ad;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            z-index: 10;
+        }
+        
+        .eggs-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .egg {
+            width: 100%;
+            height: 100px;
+            background: radial-gradient(ellipse at center, #FFD700 0%, #FF9800 70%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .egg:hover {
+            transform: scale(1.05);
+        }
+        
+        .egg.smashed {
+            background: radial-gradient(ellipse at center, #D7CCC8 0%, #A1887F 70%);
+            cursor: default;
+        }
+        
+        .egg-result {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #6a11cb;
+            margin: 20px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .card-item {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .card-item:hover {
+            transform: translateY(-5px);
+            border-color: #6a11cb;
+        }
+        
+        .card-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #6a11cb;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .card-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .confirm-buttons, .alert-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .confirm-btn, .alert-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .confirm-btn.confirm {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .confirm-btn.confirm:hover {
+            background-color: #27ae60;
+        }
+        
+        .confirm-btn.cancel {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .confirm-btn.cancel:hover {
+            background-color: #c0392b;
+        }
+        
+        .alert-btn {
+            background-color: #6a11cb;
+            color: white;
+        }
+        
+        .alert-btn:hover {
+            background-color: #5a0cb3;
+        }
+        
+        .version-info-container {
+            margin-top: 20px;
+        }
+        
+        .version-card {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #6a11cb;
+        }
+        
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .version-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .version-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .version-description {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .version-features {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .version-feature {
+            margin-bottom: 8px;
+            color: #555;
+            position: relative;
+            padding-left: 5px;
+        }
+        
+        .version-feature:before {
+            content: "•";
+            color: #6a11cb;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+        
+        .current-version {
+            background-color: #e8f4fd;
+            border-left-color: #3498db;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .navigation {
+                justify-content: center;
+            }
+            
+            .nav-btn {
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+            
+            .spend-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .eggs-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .cards-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .point-controls {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+            
+            .confirm-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .confirm-btn {
+                width: 100%;
+            }
+            
+            .parent-controls {
+                flex-direction: column;
+            }
+            
+            .parent-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-dragon"></i>
+                <div class="logo-text">
+                    <h1>笼包积分夺宝阁</h1>
+                    <p>积分在手，好物全有</p>
+                </div>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-child"></i>
+                </div>
+                <div class="user-details">
+                    <h3>小笼包</h3>
+                    <p>当前积分: <span id="totalPoints">0</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn active" data-section="points-record">
+                <i class="fas fa-list-alt"></i> 积分记录
+            </button>
+            <button class="nav-btn" data-section="spend-points">
+                <i class="fas fa-gift"></i> 花积分
+            </button>
+            <button class="nav-btn" data-section="parent-center">
+                <i class="fas fa-chart-bar"></i> 家长中心
+            </button>
+            <button class="nav-btn" data-section="version-info">
+                <i class="fas fa-code-branch"></i> 版本管理
+            </button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="main-content">
+            <!-- 积分记录部分 -->
+            <section id="points-record" class="section active">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-list-alt"></i> 积分记录</h2>
+                    <div class="total-points-display">
+                        <span style="font-size: 1.2rem; color: #666;">当前积分: </span>
+                        <span id="currentPointsDisplay" style="font-size: 1.5rem; font-weight: 700; color: #6a11cb;">0</span>
+                    </div>
+                </div>
+                
+                <div class="category-tabs">
+                    <button class="category-tab active" data-category="behavior">行为规范</button>
+                    <button class="category-tab" data-category="study">学习表现</button>
+                </div>
+                
+                <div class="points-list" id="pointsList">
+                    <!-- 积分记录将通过JavaScript动态生成 -->
+                </div>
+            </section>
+            
+            <!-- 花积分部分 -->
+            <section id="spend-points" class="section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-gift"></i> 花积分</h2>
+                    <div class="spend-reminder">
+                        <span style="color: #666;">今日剩余次数: <strong id="remainingSpends">1</strong> 次</span>
+                    </div>
+                </div>
+                
+                <div class="spend-options">
+                    <!-- 砸金蛋 -->
+                    <div class="spend-card">
+                        <div class="spend-header">
+                            <h3 class="spend-title">砸金蛋</h3>
+                            <div class="spend-cost">30积分</div>
+                        </div>
+                        <p class="spend-description">
+                            使用30积分砸一次金蛋，随机获得一项奖励。一共6个金蛋，全部砸完后重新开始。
+                        </p>
+                        <button class="spend-button" id="openEggModal">
+                            <i class="fas fa-egg"></i> 砸金蛋
+                        </button>
+                    </div>
+                    
+                    <!-- 兑换卡 -->
+                    <div class="spend-card">
+                        <div class="spend-header">
+                            <h3 class="spend-title">兑换卡</h3>
+                            <div class="spend-cost">50积分</div>
+                        </div>
+                        <p class="spend-description">
+                            使用50积分兑换一张特权卡，卡片有效期为7天。每个卡片3次内不可重复兑换。
+                        </p>
+                        <button class="spend-button" id="openCardModal">
+                            <i class="fas fa-id-card"></i> 兑换卡片
+                        </button>
+                    </div>
+                    
+                    <!-- 心愿池 -->
+                    <div class="spend-card">
+                        <div class="spend-header">
+                            <h3 class="spend-title">心愿池</h3>
+                            <div class="spend-cost">60积分</div>
+                        </div>
+                        <p class="spend-description">
+                            花费60积分可为心愿瓶增加一颗星星，积攒5颗星星可兑换一个心愿。
+                        </p>
+                        <div class="wish-container" id="wishesContainer">
+                            <!-- 心愿将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 家长中心部分 -->
+            <section id="parent-center" class="section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-chart-bar"></i> 家长中心</h2>
+                    <div class="date-range">
+                        <span style="color: #666;">积分明细与管理</span>
+                    </div>
+                </div>
+                
+                <div class="parent-controls">
+                    <button class="parent-btn reset" id="resetPoints">
+                        <i class="fas fa-undo"></i> 积分清零
+                    </button>
+                    <button class="parent-btn adjust" id="resetOperations">
+                        <i class="fas fa-sync-alt"></i> 积分调整
+                    </button>
+                    <button class="parent-btn restore" id="restoreRewards">
+                        <i class="fas fa-redo"></i> 重置奖励次数
+                    </button>
+                    <button class="parent-btn clear" id="clearStorage">
+                        <i class="fas fa-trash"></i> 清除本地存储
+                    </button>
+                </div>
+                
+                <div class="records-container">
+                    <h3 style="margin-bottom: 15px; color: #2c3e50; font-size: 1.3rem;">操作记录明细</h3>
+                    <div class="records-list" id="recordsList">
+                        <!-- 操作记录将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 版本管理部分 -->
+            <section id="version-info" class="section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-code-branch"></i> 版本管理</h2>
+                    <div class="current-version-badge">
+                        <span style="background-color: #3498db; color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600;">当前版本: v26.1.9</span>
+                    </div>
+                </div>
+                
+                <div class="version-info-container" id="versionHistory">
+                    <!-- 版本历史将通过JavaScript动态生成 -->
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <!-- 砸金蛋模态框 -->
+    <div id="eggModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeEggModal">&times;</span>
+            <h3 class="modal-title">砸金蛋</h3>
+            <p>点击金蛋直接砸开，消耗30积分，随机获得一项奖励。</p>
+            
+            <div class="eggs-container" id="eggsContainer">
+                <!-- 金蛋将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="egg-result" id="eggResult">
+                点击金蛋开始游戏
+            </div>
+        </div>
+    </div>
+    
+    <!-- 兑换卡模态框 -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeCardModal">&times;</span>
+            <h3 class="modal-title">兑换卡片</h3>
+            <p>点击卡片直接兑换，消耗50积分，卡片有效期为7天。</p>
+            
+            <div class="cards-container" id="cardsContainer">
+                <!-- 卡片将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="egg-result" id="cardResult">
+                点击卡片进行兑换
+            </div>
+        </div>
+    </div>
+    
+    <!-- 确认模态框 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="confirmTitle">确认操作</h3>
+            <p id="confirmMessage">确定要执行此操作吗？</p>
+            <div class="confirm-buttons">
+                <button class="confirm-btn confirm" id="confirmYes">确定</button>
+                <button class="confirm-btn cancel" id="confirmNo">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示模态框 -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="alertTitle">提示</h3>
+            <p id="alertMessage">操作完成！</p>
+            <div class="alert-buttons">
+                <button class="alert-btn" id="alertOk">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>笼包积分夺宝阁 &copy; 2026 | 设计：茜茜里橙</p>
+        <p style="font-size: 0.9rem; margin-top: 10px;">记录成长，奖励进步，培养好习惯</p>
+    </footer>
+    
+    <script>
+        // ========== 本地存储工具函数 ==========
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('longbaoPointsSystem', JSON.stringify(appData));
+            } catch (e) {
+                console.error('保存数据失败:', e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('longbaoPointsSystem');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    return {
+                        ...defaultData,
+                        ...parsedData,
+                        behaviorPoints: parsedData.behaviorPoints || defaultData.behaviorPoints,
+                        studyPoints: parsedData.studyPoints || defaultData.studyPoints,
+                        eggPrizes: parsedData.eggPrizes || defaultData.eggPrizes,
+                        smashedEggs: parsedData.smashedEggs || defaultData.smashedEggs,
+                        cards: parsedData.cards || defaultData.cards,
+                        wishes: parsedData.wishes || defaultData.wishes,
+                        operationRecords: parsedData.operationRecords || defaultData.operationRecords
+                    };
+                }
+            } catch (e) {
+                console.error('加载数据失败:', e);
+            }
+            return null;
+        }
+
+        function clearLocalStorage() {
+            localStorage.removeItem('longbaoPointsSystem');
+        }
+        
+        // ========== 每日重置功能 ==========
+        function getTodayString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function checkAndPerformDailyReset() {
+            const today = getTodayString();
+            const lastResetDate = appData.lastResetDate || today;
+            
+            if (lastResetDate !== today) {
+                console.log('检测到新的一天，执行每日重置...');
+                
+                appData.behaviorPoints.forEach(point => point.clicked = false);
+                appData.studyPoints.forEach(point => point.clicked = false);
+                appData.remainingSpends = 1;
+                appData.smashedEggs = [false, false, false, false, false, false];
+                appData.cards.forEach(card => !card.used && (card.disabled = false));
+                appData.lastResetDate = today;
+                
+                addOperationRecord("系统每日重置", 0, "positive");
+                saveToLocalStorage();
+                updateAllDisplays();
+                console.log('每日重置完成');
+            }
+        }
+
+        // ========== 自定义模态框函数 ==========
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const alertModal = document.getElementById('alertModal');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+
+        function showConfirm(message, title = '确认操作') {
+            return new Promise((resolve) => {
+                confirmTitle.textContent = title;
+                confirmMessage.textContent = message;
+                confirmModal.style.display = 'flex';
+                
+                document.getElementById('confirmYes').onclick = () => {
+                    confirmModal.style.display = 'none';
+                    resolve(true);
+                };
+                
+                document.getElementById('confirmNo').onclick = () => {
+                    confirmModal.style.display = 'none';
+                    resolve(false);
+                };
+                
+                confirmModal.onclick = (event) => {
+                    if (event.target === confirmModal) {
+                        confirmModal.style.display = 'none';
+                        resolve(false);
+                    }
+                };
+            });
+        }
+        
+        function showAlert(message, title = '提示') {
+            return new Promise((resolve) => {
+                alertTitle.textContent = title;
+                alertMessage.textContent = message;
+                alertModal.style.display = 'flex';
+                
+                document.getElementById('alertOk').onclick = () => {
+                    alertModal.style.display = 'none';
+                    resolve();
+                };
+                
+                alertModal.onclick = (event) => {
+                    if (event.target === alertModal) {
+                        alertModal.style.display = 'none';
+                        resolve();
+                    }
+                };
+            });
+        }
+        
+        // ========== 版本管理数据 ==========
+        const versionHistoryData = [
+            {
+                version: "26.1.9",
+                date: "2026-01-09",
+                description: "修复兼容性问题，优化代码结构",
+                features: [
+                    "修复iOS Edge浏览器心愿池星星显示问题",
+                    "优化CSS样式，减少重复代码",
+                    "重构JavaScript函数，提高代码复用率",
+                    "使用事件委托减少事件监听器数量",
+                    "保持所有功能逻辑不变"
+                ],
+                isCurrent: true
+            },
+            {
+                version: "26.1.8",
+                date: "2026-01-06",
+                description: "修复每日重置问题，优化用户体验",
+                features: [
+                    "修复积分项按钮每日自动重置问题",
+                    "修复花积分次数每日重置问题",
+                    "添加版本管理页面",
+                    "优化每日重置逻辑",
+                    "修复金蛋和卡片每日重置问题"
+                ]
+            },
+            {
+                version: "26.1.7",
+                date: "2025-12-29",
+                description: "家长中心功能优化",
+                features: [
+                    "添加积分清零功能",
+                    "添加积分调整功能",
+                    "添加重置奖励次数功能",
+                    "添加清除本地存储功能",
+                    "优化操作记录显示"
+                ]
+            },
+            {
+                version: "26.1.6",
+                date: "2025-12-20",
+                description: "心愿池功能上线",
+                features: [
+                    "添加心愿池功能",
+                    "支持花费60积分增加星星",
+                    "积攒5颗星星可兑换心愿",
+                    "添加心愿成真功能",
+                    "优化UI界面"
+                ]
+            },
+            {
+                version: "26.1.5",
+                date: "2025-12-15",
+                description: "砸金蛋和兑换卡功能",
+                features: [
+                    "添加砸金蛋功能（30积分）",
+                    "添加兑换卡功能（50积分）",
+                    "添加6种不同卡片类型",
+                    "添加每日花积分次数限制",
+                    "优化动画效果"
+                ]
+            },
+            {
+                version: "26.1.4",
+                date: "2025-12-10",
+                description: "积分系统基础功能",
+                features: [
+                    "添加行为规范积分项（15项）",
+                    "添加学习表现积分项（8项）",
+                    "实现积分添加/扣除功能",
+                    "添加本地存储功能",
+                    "添加响应式设计"
+                ]
+            },
+            {
+                version: "26.1.3",
+                date: "2025-12-05",
+                description: "初始版本发布",
+                features: [
+                    "创建基本页面结构",
+                    "添加UI样式设计",
+                    "实现导航切换功能",
+                    "添加用户信息显示",
+                    "基础框架搭建完成"
+                ]
+            }
+        ];
+        
+        // ========== 初始化数据 ==========
+        const defaultData = {
+            totalPoints: 0,
+            remainingSpends: 1,
+            lastResetDate: getTodayString(),
+            operationRecords: [],
+            behaviorPoints: [
+                { id: 1, category: "behavior", name: "光盘并收拾碗筷", description: "按天计算", points: 3, type: "positive", highlight: false, clicked: false },
+                { id: 2, category: "behavior", name: "按时主动洗澡", description: "按天计算", points: 3, type: "positive", highlight: false, clicked: false },
+                { id: 3, category: "behavior", name: "主动帮忙做家务", description: "按天计算", points: 3, type: "positive", highlight: false, clicked: false },
+                { id: 4, category: "behavior", name: "回家主动完成作业", description: "计时1小时不走神", points: 5, type: "positive", highlight: false, clicked: false },
+                { id: 5, category: "behavior", name: "学习时不发脾气哭鼻子", description: "按天计算", points: 5, type: "positive", highlight: false, clicked: false },
+                { id: 6, category: "behavior", name: "主动承认错事并道歉", description: "按次计算", points: 10, type: "positive", highlight: false, clicked: false },	                
+                { id: 7, category: "behavior", name: "主动参加夸夸大会", description: "按天计算", points: 10, type: "positive", highlight: false, clicked: false },
+                { id: 8, category: "behavior", name: "老师联系家长点名表扬一次", description: "", points: 50, type: "positive", highlight: true, clicked: false },
+                { id: 9, category: "behavior", name: "获得校内奖状一次", description: "", points: 50, type: "positive", highlight: true, clicked: false },
+                { id: 10, category: "behavior", name: "不按规范上厕所", description: "按次计算", points: -3, type: "negative", highlight: false, clicked: false },
+                { id: 11, category: "behavior", name: "不正常地破坏文具", description: "按次计算", points: -3, type: "negative", highlight: false, clicked: false },
+                { id: 12, category: "behavior", name: "对错事不承认找理由", description: "按次计算", points: -5, type: "negative", highlight: false, clicked: false },
+                { id: 13, category: "behavior", name: "对家人发脾气并不沟通原因", description: "按次计算", points: -5, type: "negative", highlight: false, clicked: false },
+                { id: 14, category: "behavior", name: "无故和小朋友起冲突", description: "", points: -20, type: "negative", highlight: true, clicked: false },
+                { id: 15, category: "behavior", name: "被老师批评找家长一次", description: "", points: -50, type: "negative", highlight: true, clicked: false }
+            ],
+            studyPoints: [
+                { id: 16, category: "study", name: "学校试卷获得一个五角星", description: "", points: 5, type: "positive", highlight: false, clicked: false },
+                { id: 17, category: "study", name: "限时完成当日计算", description: "计时20分钟", points: 5, type: "positive", highlight: false, clicked: false },
+                { id: 18, category: "study", name: "抽查生词或单词默写全对", description: "", points: 10, type: "positive", highlight: false, clicked: false },
+                { id: 19, category: "study", name: "讲解一道数学题", description: "", points: 10, type: "positive", highlight: false, clicked: false },
+                { id: 20, category: "study", name: "复述一个中文故事", description: "", points: 10, type: "positive", highlight: false, clicked: false },
+                { id: 21, category: "study", name: "复述一个英语故事", description: "", points: 20, type: "positive", highlight: false, clicked: false },
+                { id: 22, category: "study", name: "Eddie爸打卡题得分70分以上", description: "", points: 20, type: "positive", highlight: false, clicked: false },
+                { id: 23, category: "study", name: "电子鼓上台表演或通过考级", description: "", points: 60, type: "positive", highlight: false, clicked: false }
+            ],
+            eggPrizes: ["奶茶一杯", "零食一个", "积分+30", "冰淇淋一个", "文具一个", "玩20分钟"],
+            smashedEggs: [false, false, false, false, false, false],
+            cards: [
+                { id: 1, name: "晚睡卡", description: "自由玩耍一小时，活动任选", used: false, disabled: false },
+                { id: 2, name: "提案卡", description: "安排周末半天活动", used: false, disabled: false },
+                { id: 3, name: "点餐卡", description: "任意指定早中晚一餐食物", used: false, disabled: false },
+                { id: 4, name: "游玩卡", description: "任意游乐场玩耍4小时以上", used: false, disabled: false },
+                { id: 5, name: "体验卡", description: "在爸妈指导下操作新工具", used: false, disabled: false },
+                { id: 6, name: "免罚卡", description: "抵扣任意一个扣分项", used: false, disabled: false },
+            ],
+            wishes: [
+                { id: 1, name: "伙伴派对", description: "邀请1-3名小朋友，来家里或出去玩（半天）", stars: 0, fulfilled: false },
+                { id: 2, name: "家庭旅行", description: "两天一晚的周边旅行+无作业", stars: 0, fulfilled: false },
+                { id: 3, name: "购物基金", description: "500元内任意购物", stars: 0, fulfilled: false },
+            ]
+        };
+        
+        let appData = loadFromLocalStorage() || defaultData;
+        
+        // ========== 通用功能函数 ==========
+        function addOperationRecord(name, points, type = "positive") {
+            appData.operationRecords.unshift({
+                type: type,
+                name: name,
+                points: points,
+                time: new Date().toLocaleString('zh-CN')
+            });
+        }
+
+        function updateAllDisplays() {
+            updatePointsDisplay();
+            renderRecords();
+            renderWishes();
+            saveToLocalStorage();
+        }
+
+        function updatePointsDisplay() {
+            document.getElementById('totalPoints').textContent = appData.totalPoints;
+            document.getElementById('currentPointsDisplay').textContent = appData.totalPoints;
+            document.getElementById('remainingSpends').textContent = appData.remainingSpends;
+        }
+        
+        // ========== 积分记录功能 ==========
+        function renderPointsList(category) {
+            const pointsList = document.getElementById('pointsList');
+            const pointsArray = category === 'behavior' ? appData.behaviorPoints : appData.studyPoints;
+            
+            pointsList.innerHTML = pointsArray.map(point => {
+                const pointValueClass = point.points > 0 ? 'positive' : 'negative';
+                const pointSymbol = point.points > 0 ? '+' : '';
+                const buttonClass = point.points > 0 ? 'positive' : 'negative';
+                const isDisabled = point.clicked || false;
+                const buttonText = point.points > 0 ? '加分' : '扣分';
+                
+                return `
+                    <div class="point-item ${pointValueClass} ${point.highlight ? 'highlight' : ''}">
+                        <div class="point-info">
+                            <h3>${point.name}</h3>
+                            ${point.description ? `<p>${point.description}</p>` : ''}
+                        </div>
+                        <div class="point-controls">
+                            <div class="point-value ${pointValueClass}">${pointSymbol}${point.points}</div>
+                            <button class="point-button ${buttonClass} ${isDisabled ? 'disabled' : ''}" 
+                                    data-id="${point.id}" 
+                                    data-category="${point.category}"
+                                    ${isDisabled ? 'disabled' : ''}>
+                                ${buttonText}${isDisabled ? ' (已操作)' : ''}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function addPoints(id, category) {
+            checkAndPerformDailyReset();
+            const pointsArray = category === 'behavior' ? appData.behaviorPoints : appData.studyPoints;
+            const point = pointsArray.find(p => p.id === id);
+            
+            if (!point) return;
+            
+            if (point.clicked) {
+                showAlert('此项已经操作过了，请使用家长中心的"积分调整"功能重置操作状态', '提示');
+                return;
+            }
+            
+            appData.totalPoints += point.points;
+            point.clicked = true;
+            addOperationRecord(point.name, point.points, point.points > 0 ? "positive" : "negative");
+            
+            // 更新按钮状态 - 这是修复的关键
+            const button = document.querySelector(`.point-button[data-id="${id}"][data-category="${category}"]`);
+            if (button) {
+                button.classList.add('disabled');
+                button.disabled = true;
+                button.textContent = `${point.points > 0 ? '加分' : '扣分'} (已操作)`;
+            }
+            
+            updateAllDisplays();
+            
+            const message = point.points > 0 ? `成功添加${point.points}积分！` : `扣除${-point.points}积分！`;
+            showAlert(message, '操作成功');
+        }
+        
+        // ========== 心愿池功能 ==========
+        function renderWishes() {
+            const wishesContainer = document.getElementById('wishesContainer');
+            
+            wishesContainer.innerHTML = appData.wishes.map(wish => {
+                let starsHtml = '';
+                for (let i = 0; i < 5; i++) {
+                    starsHtml += `<div class="wish-star ${i < wish.stars ? 'filled' : ''}"></div>`;
+                }
+                
+                const addButtonDisabled = appData.totalPoints < 60 || wish.stars >= 5 || wish.fulfilled;
+                const addButtonClass = addButtonDisabled ? 'wish-add-btn disabled' : 'wish-add-btn';
+                const fulfillButtonVisible = wish.stars >= 5 && !wish.fulfilled;
+                
+                return `
+                    <div class="wish-item">
+                        <div class="wish-header">
+                            <div class="wish-title">${wish.name}</div>
+                            <div class="wish-stars">${starsHtml}</div>
+                        </div>
+                        <div class="wish-description">${wish.description}</div>
+                        <div class="wish-controls">
+                            <button class="${addButtonClass}" data-id="${wish.id}" ${addButtonDisabled ? 'disabled' : ''}>
+                                花费60积分增加星星
+                            </button>
+                            ${fulfillButtonVisible ? 
+                                `<button class="wish-fulfill-btn" data-id="${wish.id}">梦想成真</button>` : 
+                                ''
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function addWishStar(id) {
+            checkAndPerformDailyReset();
+            const wish = appData.wishes.find(w => w.id === id);
+            
+            if (!wish) return;
+            
+            if (appData.remainingSpends === 0) {
+                showAlert('今天的花积分次数已用完，请明天再来！', '提示');
+                return;
+            }
+            
+            if (appData.totalPoints < 60 || wish.stars >= 5 || wish.fulfilled) return;
+            
+            appData.totalPoints -= 60;
+            wish.stars += 1;
+            appData.remainingSpends -= 1;
+            addOperationRecord(`心愿瓶增加星星 - ${wish.name}`, -60, "spend");
+            updateAllDisplays();
+            showAlert('成功为心愿增加一颗星星！', '操作成功');
+        }
+        
+        function fulfillWish(id) {
+            const wish = appData.wishes.find(w => w.id === id);
+            if (!wish || wish.stars < 5) return;
+            
+            wish.fulfilled = true;
+            wish.stars = 0;
+            addOperationRecord(`心愿实现 - ${wish.name}`, 0, "spend");
+            updateAllDisplays();
+            showAlert(`恭喜！心愿"${wish.name}"已实现！`, '心愿成真');
+        }
+        
+        // ========== 砸金蛋功能 ==========
+        function renderEggs() {
+            const eggsContainer = document.getElementById('eggsContainer');
+            
+            eggsContainer.innerHTML = appData.smashedEggs.map((smashed, i) => 
+                `<div class="egg ${smashed ? 'smashed' : ''}" data-id="${i}">${smashed ? '✓' : i + 1}</div>`
+            ).join('');
+        }
+        
+        function smashEgg(eggId) {
+            checkAndPerformDailyReset();
+            
+            if (appData.smashedEggs[eggId] || appData.remainingSpends === 0 || appData.totalPoints < 30) {
+                if (appData.remainingSpends === 0) showAlert('今天的花积分次数已用完，请明天再来！', '提示');
+                else if (appData.totalPoints < 30) showAlert('积分不足，无法砸金蛋！', '提示');
+                return;
+            }
+            
+            appData.smashedEggs[eggId] = true;
+            const availablePrizes = appData.eggPrizes.filter((prize, index) => !appData.smashedEggs[index]);
+            const randomPrize = availablePrizes[Math.floor(Math.random() * availablePrizes.length)];
+            
+            appData.totalPoints -= 30;
+            appData.remainingSpends -= 1;
+            addOperationRecord(`砸金蛋 - 获得${randomPrize}`, -30, "spend");
+            
+            if (randomPrize === "积分+30") {
+                appData.totalPoints += 30;
+                addOperationRecord("砸金蛋获得积分", 30, "positive");
+            }
+            
+            document.getElementById('eggResult').innerHTML = `<i class="fas fa-gift"></i> 恭喜！砸开金蛋获得: <strong>${randomPrize}</strong>`;
+            updateAllDisplays();
+            renderEggs();
+            
+            if (appData.smashedEggs.every(egg => egg)) {
+                setTimeout(() => showAlert('所有金蛋都已砸开！明天将重新开始。', '金蛋游戏'), 500);
+            }
+        }
+        
+        // ========== 兑换卡功能 ==========
+        function renderCards() {
+            const cardsContainer = document.getElementById('cardsContainer');
+            const iconMap = {
+                "晚睡卡": "fa-moon",
+                "提案卡": "fa-lightbulb",
+                "点餐卡": "fa-utensils",
+                "游玩卡": "fa-gamepad",
+                "体验卡": "fa-tools",
+                "免罚卡": "fa-shield-alt"
+            };
+            
+            cardsContainer.innerHTML = appData.cards.map(card => `
+                <div class="card-item ${card.disabled ? 'disabled' : ''}" data-id="${card.id}">
+                    <div class="card-icon">
+                        <i class="fas ${iconMap[card.name] || 'fa-card'}"></i>
+                    </div>
+                    <div class="card-title">${card.name}</div>
+                    <div class="card-desc">${card.description}</div>
+                    ${card.used ? '<div style="margin-top: 10px; color: #e74c3c; font-size: 0.8rem;">已使用</div>' : ''}
+                </div>
+            `).join('');
+        }
+        
+        function redeemCard(cardId) {
+            checkAndPerformDailyReset();
+            const card = appData.cards.find(c => c.id === cardId);
+            if (!card || card.disabled) return;
+            
+            if (appData.remainingSpends === 0) {
+                showAlert('今天的花积分次数已用完，请明天再来！', '提示');
+                return;
+            }
+            
+            if (appData.totalPoints < 50) {
+                showAlert('积分不足，无法兑换卡片！', '提示');
+                return;
+            }
+            
+            card.used = true;
+            card.disabled = true;
+            appData.totalPoints -= 50;
+            appData.remainingSpends -= 1;
+            addOperationRecord(`兑换卡片 - ${card.name}`, -50, "spend");
+            
+            document.getElementById('cardResult').innerHTML = `<i class="fas fa-check-circle"></i> 成功兑换: <strong>${card.name}</strong>，有效期7天`;
+            updateAllDisplays();
+            renderCards();
+            showAlert(`成功兑换卡片：${card.name}！卡片有效期为7天。`, '兑换成功');
+        }
+        
+        // ========== 其他页面功能 ==========
+        function renderRecords() {
+            const recordsList = document.getElementById('recordsList');
+            
+            if (appData.operationRecords.length === 0) {
+                recordsList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无操作记录</div>';
+                return;
+            }
+            
+            recordsList.innerHTML = appData.operationRecords.map(record => {
+                const pointsSymbol = record.points > 0 ? '+' : '';
+                const pointsText = record.points !== 0 ? pointsSymbol + record.points : '心愿实现';
+                
+                return `
+                    <div class="record-item ${record.type}">
+                        <div class="record-info">
+                            <div class="record-name">${record.name}</div>
+                            <div class="record-time">${record.time}</div>
+                        </div>
+                        <div class="record-points ${record.type}">${pointsText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderVersionHistory() {
+            const versionHistory = document.getElementById('versionHistory');
+            
+            versionHistory.innerHTML = versionHistoryData.map(version => {
+                const featuresHtml = version.features && version.features.length > 0 
+                    ? `<ul class="version-features">${version.features.map(f => `<li class="version-feature">${f}</li>`).join('')}</ul>` 
+                    : '';
+                
+                return `
+                    <div class="version-card ${version.isCurrent ? 'current-version' : ''}">
+                        <div class="version-header">
+                            <div class="version-title">版本 v${version.version}</div>
+                            <div class="version-date">${version.date}</div>
+                        </div>
+                        <div class="version-description">${version.description}</div>
+                        ${featuresHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function resetAllOperations() {
+            appData.behaviorPoints.forEach(point => point.clicked = false);
+            appData.studyPoints.forEach(point => point.clicked = false);
+            
+            const activeTab = document.querySelector('.category-tab.active');
+            if (activeTab) renderPointsList(activeTab.getAttribute('data-category'));
+            
+            saveToLocalStorage();
+            showAlert('所有积分项的操作状态已重置，现在可以重新操作了！', '操作成功');
+        }
+        
+        // ========== 页面初始化 ==========
+        function initPage() {
+            checkAndPerformDailyReset();
+            updatePointsDisplay();
+            renderPointsList('behavior');
+            renderWishes();
+            renderEggs();
+            renderCards();
+            renderRecords();
+            renderVersionHistory();
+            
+            // 设置导航
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-btn, .section').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.section).classList.add('active');
+                });
+            });
+            
+            // 设置分类标签
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    renderPointsList(this.dataset.category);
+                });
+            });
+            
+            // 设置模态框
+            document.getElementById('openEggModal').addEventListener('click', () => {
+                checkAndPerformDailyReset();
+                if (appData.remainingSpends === 0) {
+                    showAlert('今天的花积分次数已用完，请明天再来！', '提示');
+                    return;
+                }
+                document.getElementById('eggModal').style.display = 'flex';
+            });
+            
+            document.getElementById('openCardModal').addEventListener('click', () => {
+                checkAndPerformDailyReset();
+                if (appData.remainingSpends === 0) {
+                    showAlert('今天的花积分次数已用完，请明天再来！', '提示');
+                    return;
+                }
+                document.getElementById('cardModal').style.display = 'flex';
+            });
+            
+            document.getElementById('closeEggModal').addEventListener('click', () => {
+                document.getElementById('eggModal').style.display = 'none';
+            });
+            
+            document.getElementById('closeCardModal').addEventListener('click', () => {
+                document.getElementById('cardModal').style.display = 'none';
+            });
+            
+            // 设置家长中心按钮
+            document.getElementById('resetPoints').addEventListener('click', async () => {
+                if (await showConfirm('确定要将所有积分清零吗？', '积分清零')) {
+                    appData.totalPoints = 0;
+                    appData.operationRecords = [];
+                    updateAllDisplays();
+                    await showAlert('积分已清零！', '操作完成');
+                }
+            });
+            
+            document.getElementById('resetOperations').addEventListener('click', async () => {
+                if (await showConfirm('确定要重置所有积分项的操作状态吗？', '积分调整')) {
+                    resetAllOperations();
+                }
+            });
+            
+            document.getElementById('restoreRewards').addEventListener('click', async () => {
+                if (await showConfirm('确定要重置金蛋、卡片和剩余次数吗？（心愿池的小星星将保留）', '重置奖励次数')) {
+                    appData.smashedEggs = [false, false, false, false, false, false];
+                    appData.cards.forEach(card => {
+                        card.used = false;
+                        card.disabled = false;
+                    });
+                    appData.remainingSpends = 1;
+                    updatePointsDisplay();
+                    renderEggs();
+                    renderCards();
+                    saveToLocalStorage();
+                    await showAlert('金蛋、卡片和剩余次数已重置！（心愿池的小星星已保留）', '操作完成');
+                }
+            });
+            
+            document.getElementById('clearStorage').addEventListener('click', async () => {
+                if (await showConfirm('确定要清除所有本地存储数据吗？这将重置所有积分和记录！', '清除本地存储')) {
+                    clearLocalStorage();
+                    await showAlert('本地存储已清除，页面将重新加载！', '操作完成');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            });
+            
+            // 事件委托处理点击事件 - 修复积分按钮状态更新
+            document.addEventListener('click', (event) => {
+                const target = event.target;
+                
+                // 处理积分按钮点击
+                if (target.classList.contains('point-button') && !target.classList.contains('disabled')) {
+                    const id = parseInt(target.dataset.id);
+                    const category = target.dataset.category;
+                    
+                    // 防止重复点击
+                    target.classList.add('disabled');
+                    target.disabled = true;
+                    
+                    // 更新按钮文本
+                    const isPositive = target.classList.contains('positive');
+                    target.textContent = `${isPositive ? '加分' : '扣分'} (已操作)`;
+                    
+                    // 执行积分操作
+                    addPoints(id, category);
+                }
+                
+                // 处理心愿池按钮点击
+                if (target.classList.contains('wish-add-btn') && !target.classList.contains('disabled')) {
+                    const id = parseInt(target.dataset.id);
+                    addWishStar(id);
+                }
+                
+                if (target.classList.contains('wish-fulfill-btn')) {
+                    const id = parseInt(target.dataset.id);
+                    fulfillWish(id);
+                }
+                
+                if (target.classList.contains('egg') && !target.classList.contains('smashed')) {
+                    const eggId = parseInt(target.dataset.id);
+                    smashEgg(eggId);
+                }
+                
+                if (target.classList.contains('card-item') && !target.classList.contains('disabled')) {
+                    const cardId = parseInt(target.dataset.id);
+                    redeemCard(cardId);
+                }
+            });
+            
+            // 点击模态框外部关闭
+            [document.getElementById('eggModal'), document.getElementById('cardModal')].forEach(modal => {
+                if (modal) {
+                    modal.addEventListener('click', (event) => {
+                        if (event.target === modal) modal.style.display = 'none';
+                    });
+                }
+            });
+            
+            // 每日检查定时器
+            setInterval(checkAndPerformDailyReset, 5 * 60 * 1000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
