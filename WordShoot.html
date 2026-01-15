@@ -1,5 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+<!-- 在页面的合适位置添加返回按钮 -->
+<div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
+    <a href="portal.html" style="
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)';"
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
+        ← 返回首页
+    </a>
+</div>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
